@@ -15,6 +15,13 @@
       "when": 1748088569584,
       "tag": "0001_overjoyed_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1748091228782,
+      "tag": "0002_legal_mimic",
+      "breakpoints": true
     }
   ]
 }

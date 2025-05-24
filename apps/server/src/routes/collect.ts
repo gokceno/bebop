@@ -1,19 +1,38 @@
 import { z } from "zod";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { CollectPayload } from "../types";
 import { db, schema } from "../utils/db";
 
 export default async function collectRoute(fastify: FastifyInstance) {
+  // Hook-based authentication approach
+  fastify.addHook(
+    "preHandler",
+    fastify.auth([fastify.verifyJWT, fastify.verifyBearer])
+  );
+
   // GET /collect - Returns status information
-  fastify.get("/collect", async () => {
+  fastify.get("/collect", async (request: FastifyRequest) => {
+    const tokenInfo = request.jwt?.user || {
+      message: "Authenticated with bearer token",
+    };
+
     return {
       message: "Collect endpoint is running",
       timestamp: new Date().toISOString(),
+      auth: tokenInfo,
     };
   });
 
   // POST /collect - Processes and stores collected data
   fastify.post("/collect", async (request, reply) => {
+    // Get authentication method from the flag set by auth functions
+    const authMethod = (request as any).authMethod || "unknown";
+    const jwtPayload = (request as any).jwtPayload;
+    const bearerToken = (request as any).bearerToken;
+
+    // Log authentication info
+    fastify["logger"].debug(`Request authenticated with ${authMethod}`);
+
     // Dynamically build the schema from config
     const eventTypes = fastify["config"].eventTypes || [];
 
@@ -58,7 +77,6 @@ export default async function collectRoute(fastify: FastifyInstance) {
     try {
       const body: CollectPayload | object = request.body || {};
 
-      fastify["logger"].debug(`Received payload: ${JSON.stringify(body)}`);
       const validatedPayload: any = payloadSchema.safeParse(body);
       if (!validatedPayload.success) {
         fastify["logger"].error(validatedPayload.error);
@@ -69,6 +87,11 @@ export default async function collectRoute(fastify: FastifyInstance) {
       fastify["logger"].debug(JSON.stringify(validatedPayload.data.$params));
       fastify["logger"].debug(JSON.stringify(validatedPayload.data.$trace));
 
+      if (jwtPayload)
+        fastify["logger"].debug(
+          `Auth data to be inserted: ${JSON.stringify(jwtPayload)}`
+        );
+
       // Insert event data into the database
       const eventData = await db.transaction(async (tx) => {
         // Create the event record
@@ -76,6 +99,7 @@ export default async function collectRoute(fastify: FastifyInstance) {
           .insert(schema.events)
           .values({
             eventName: validatedPayload.data.$event,
+            originator: jwtPayload || {},
           })
           .returning();
 
@@ -110,25 +134,23 @@ export default async function collectRoute(fastify: FastifyInstance) {
         return newEvent;
       });
 
-      return {
+      return reply.status(201).send({
         success: true,
         eventId: eventData.id,
         received: {
           $event: validatedPayload.data.$event,
           $params: validatedPayload.data.$params,
         },
-      };
+        auth: {
+          method: authMethod,
+        },
+      });
     } catch (error) {
       fastify["logger"].error(`Error processing collect request: ${error}`);
-      const statusCode =
-        error instanceof Error && error.message.includes("Invalid payload")
-          ? 400
-          : 500;
-      reply.status(statusCode);
-      return {
+      return reply.status(500).send({
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
-      };
+      });
     }
   });
 }

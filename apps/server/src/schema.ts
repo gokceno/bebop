@@ -8,6 +8,7 @@ export const events = sqliteTable("events", {
     .primaryKey()
     .$defaultFn(() => createId()),
   eventName: text("event_name"),
+  originator: text("originator", { mode: "json" }),
   createdAt: int("created_at", { mode: "timestamp" }).default(
     sql`CURRENT_TIMESTAMP`
   ),

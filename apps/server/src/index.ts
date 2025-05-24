@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import { yaml } from "./utils/config";
 import { logger } from "./utils/logger";
 import { db } from "./utils/db";
+import { setupAuth } from "./utils/auth";
 import collectRoute from "./routes/collect";
 import { Config } from "./types";
 
@@ -14,12 +15,15 @@ fastify.decorate("logger", logger);
 fastify.decorate("config", config);
 fastify.decorate("db", db);
 
+// Setup JWT and bearer authentication
+setupAuth(fastify);
+
 // Declare a root route
 fastify.get("/", async () => {
   return { server: "running" };
 });
 
-// Register the collect route manually
+// Register routes
 fastify.register(collectRoute);
 
 // Run the server
