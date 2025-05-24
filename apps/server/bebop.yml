@@ -1,3 +1,10 @@
+auth:
+  bearer_tokens:
+    - bebop-api-key-1
+    - bebop-api-key-2
+  jwt:
+    secret: bebop-analytics-super-secret-key
+    max_age: 1d
 event_types:
   - type: createReservation
     params:

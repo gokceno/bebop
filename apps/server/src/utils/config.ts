@@ -36,6 +36,13 @@ const yaml = (configFileName: string): Config => {
 };
 
 const configSchema = z.object({
+  auth: z.object({
+    bearer_tokens: z.array(z.string()),
+    jwt: z.object({
+      secret: z.string(),
+      max_age: z.string(),
+    }),
+  }),
   event_types: z.array(
     z.object({
       type: z.string(),

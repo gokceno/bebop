@@ -1,6 +1,7 @@
 import fastifyJwt from "@fastify/jwt";
 import fastifyAuth from "@fastify/auth";
 import { FastifyInstance, FastifyRequest } from "fastify";
+import { Config } from "../types";
 
 interface JwtPayload {
   userId?: string;
@@ -9,35 +10,14 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
-// JWT secret should come from environment variables in production
-const JWT_SECRET = process.env.JWT_SECRET || "bebop-analytics-super-secret-key";
-
-// Bearer tokens would be stored in a database in a real application
-const BEARER_TOKENS = new Set([
-  "bebop-api-key-1",
-  "bebop-api-key-2",
-  "test-token",
-]);
-
-export function setupAuth(fastify: FastifyInstance): void {
-  // Register JWT plugin
+export function setupAuth(fastify: FastifyInstance, config: Config): void {
   fastify.register(fastifyJwt, {
-    secret: JWT_SECRET,
-    sign: {
-      expiresIn: "1d", // Token expires in 1 day
-    },
+    secret: config.auth.jwt.secret,
     verify: {
-      maxAge: "1d", // Maximum age of token
+      maxAge: config.auth.jwt.maxAge,
     },
   });
-
-  // Register auth plugin (required for combining auth strategies)
   fastify.register(fastifyAuth);
-
-  // We'll implement our own bearer auth instead of using the plugin
-  // to avoid type conflicts
-
-  // Decorators for authentication - these must match FastifyAuthFunction signature
   fastify.decorate("verifyJWT", async (request: FastifyRequest) => {
     try {
       const jwtPayload = await request.jwtDecode();
@@ -58,7 +38,7 @@ export function setupAuth(fastify: FastifyInstance): void {
       }
 
       const token = authorization.slice(7); // Remove 'Bearer ' prefix
-      if (!BEARER_TOKENS.has(token)) {
+      if (!config.auth.bearerTokens.includes(token)) {
         throw new Error("Invalid bearer token");
       }
       // Set auth method flag on request

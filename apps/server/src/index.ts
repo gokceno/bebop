@@ -16,7 +16,7 @@ fastify.decorate("config", config);
 fastify.decorate("db", db);
 
 // Setup JWT and bearer authentication
-setupAuth(fastify);
+setupAuth(fastify, config);
 
 // Declare a root route
 fastify.get("/", async () => {

@@ -1,4 +1,11 @@
 export type Config = {
+  auth: {
+    bearerTokens: string[];
+    jwt: {
+      secret: string;
+      maxAge: string;
+    };
+  };
   eventTypes: {
     type: string;
     trace: boolean;
