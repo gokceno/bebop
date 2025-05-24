@@ -4,11 +4,12 @@ import { logger } from "./utils/logger";
 import { db } from "./utils/db";
 import { setupAuth } from "./utils/auth";
 import collectRoute from "./routes/collect";
+import graphqlRoute from "./routes/graphql";
 import { Config } from "./types";
 
 const config: Config = yaml("bebop.yml");
 
-const fastify: FastifyInstance = Fastify({ logger: true });
+const fastify: FastifyInstance = Fastify();
 
 // Decorate fastify instance with logger and config
 fastify.decorate("logger", logger);
@@ -25,6 +26,7 @@ fastify.get("/", async () => {
 
 // Register routes
 fastify.register(collectRoute);
+fastify.register(graphqlRoute);
 
 // Run the server
 const start = async () => {

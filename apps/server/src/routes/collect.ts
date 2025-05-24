@@ -29,9 +29,6 @@ export default async function collectRoute(fastify: FastifyInstance) {
     const authMethod = (request as any).authMethod || "unknown";
     const jwtPayload = (request as any).jwtPayload;
 
-    // Log authentication info
-    fastify["logger"].debug(`Request authenticated with ${authMethod}`);
-
     // Dynamically build the schema from config
     const eventTypes = fastify["config"].eventTypes || [];
 
@@ -82,13 +79,16 @@ export default async function collectRoute(fastify: FastifyInstance) {
         throw new Error(`Invalid payload.`);
       }
 
-      fastify["logger"].debug(validatedPayload.data.$event);
-      fastify["logger"].debug(JSON.stringify(validatedPayload.data.$params));
-      fastify["logger"].debug(JSON.stringify(validatedPayload.data.$trace));
-
+      fastify["logger"].debug(`Event: ${validatedPayload.data.$event}`);
+      fastify["logger"].debug(
+        `Validated params: ${JSON.stringify(validatedPayload.data.$params)}`
+      );
+      fastify["logger"].debug(
+        `Validated trace: ${JSON.stringify(validatedPayload.data.$trace)}`
+      );
       if (jwtPayload)
         fastify["logger"].debug(
-          `Auth data to be inserted: ${JSON.stringify(jwtPayload)}`
+          `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
         );
 
       // Insert event data into the database
