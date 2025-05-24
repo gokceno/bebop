@@ -1,0 +1,7 @@
+services:
+  sender:
+    build:
+      context: apps/server
+    container_name: bebop-server
+    command: src/index.ts
+    restart: unless-stopped
