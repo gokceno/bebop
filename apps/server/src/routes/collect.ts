@@ -28,7 +28,6 @@ export default async function collectRoute(fastify: FastifyInstance) {
     // Get authentication method from the flag set by auth functions
     const authMethod = (request as any).authMethod || "unknown";
     const jwtPayload = (request as any).jwtPayload;
-    const bearerToken = (request as any).bearerToken;
 
     // Log authentication info
     fastify["logger"].debug(`Request authenticated with ${authMethod}`);
