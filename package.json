@@ -1,0 +1,18 @@
+{
+  "name": "bebop",
+  "type": "module",
+  "packageManager": "bun@1.2.13",
+  "devDependencies": {
+    "turbo": "^2.5.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@changesets/cli": "^2.29.4"
+  }
+}
