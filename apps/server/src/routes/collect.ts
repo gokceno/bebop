@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { CollectPayload } from "../types";
+import { db, schema } from "../utils/db";
 
 export default async function collectRoute(fastify: FastifyInstance) {
   // GET /collect - Returns status information
@@ -57,9 +58,10 @@ export default async function collectRoute(fastify: FastifyInstance) {
     try {
       const body: CollectPayload | object = request.body || {};
 
+      fastify["logger"].debug(`Received payload: ${JSON.stringify(body)}`);
       const validatedPayload: any = payloadSchema.safeParse(body);
       if (!validatedPayload.success) {
-        fastify["logger"].debug(validatedPayload.error);
+        fastify["logger"].error(validatedPayload.error);
         throw new Error(`Invalid payload.`);
       }
 
@@ -67,15 +69,62 @@ export default async function collectRoute(fastify: FastifyInstance) {
       fastify["logger"].debug(JSON.stringify(validatedPayload.data.$params));
       fastify["logger"].debug(JSON.stringify(validatedPayload.data.$trace));
 
+      // Insert event data into the database
+      const eventData = await db.transaction(async (tx) => {
+        // Create the event record
+        const [newEvent] = await tx
+          .insert(schema.events)
+          .values({
+            eventName: validatedPayload.data.$event,
+          })
+          .returning();
+
+        // Insert all parameters
+        if (validatedPayload.data.$params) {
+          const paramsEntries = Object.entries(validatedPayload.data.$params);
+          if (paramsEntries.length > 0) {
+            await tx.insert(schema.eventsParams).values(
+              paramsEntries.map(([paramName, paramValue]) => ({
+                eventId: newEvent.id,
+                paramName,
+                paramValue: paramValue?.toString() || "",
+              }))
+            );
+          }
+        }
+
+        // Insert trace data - each trace item as separate record
+        if (
+          validatedPayload.data.$trace &&
+          Array.isArray(validatedPayload.data.$trace) &&
+          validatedPayload.data.$trace.length > 0
+        ) {
+          await tx.insert(schema.eventsTraces).values(
+            validatedPayload.data.$trace.map((traceData: object) => ({
+              eventId: newEvent.id,
+              traceData,
+            }))
+          );
+        }
+
+        return newEvent;
+      });
+
       return {
         success: true,
+        eventId: eventData.id,
         received: {
-          event: validatedPayload.data.$event,
-          params: validatedPayload.data.$params,
+          $event: validatedPayload.data.$event,
+          $params: validatedPayload.data.$params,
         },
       };
     } catch (error) {
-      reply.status(500);
+      fastify["logger"].error(`Error processing collect request: ${error}`);
+      const statusCode =
+        error instanceof Error && error.message.includes("Invalid payload")
+          ? 400
+          : 500;
+      reply.status(statusCode);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
