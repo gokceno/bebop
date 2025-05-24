@@ -1,0 +1,28 @@
+meta {
+  name: Collect
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "postContent",
+    "$params": {
+      "institutionName": "ddd",
+      "channelId": 123
+    },
+    "$trace": [
+      {
+        "title": "",
+        "body": "",
+        "image": ""
+      }
+    ]
+  }
+}
