@@ -1,0 +1,11 @@
+event_types:
+  - type: createReservation
+    params:
+      - operator_id: numeric
+      - property_id: numeric
+    trace: true
+  - type: postContent
+    params:
+      - institution_name: string
+      - channel_id: numeric
+    trace: false
