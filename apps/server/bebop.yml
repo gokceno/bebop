@@ -13,6 +13,5 @@ event_types:
     trace: true
   - type: postContent
     params:
-      - institution_name: string
-      - channel_id: numeric
-    trace: false
+      - creator_id: string
+    trace: true

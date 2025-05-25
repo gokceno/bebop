@@ -5,8 +5,7 @@
   "packageManager": "bun@1.2.13",
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
-    "build": "tsc"
+    "start": "bun src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.2.10",
