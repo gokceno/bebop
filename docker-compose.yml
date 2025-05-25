@@ -1,7 +1,11 @@
 services:
-  sender:
+  server:
     build:
-      context: apps/server
+      context: ./apps/server
     container_name: bebop-server
-    command: src/index.ts
+    command: start
     restart: unless-stopped
+    ports:
+      - 3000
+    volumes:
+      - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
