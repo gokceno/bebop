@@ -1,8 +1,7 @@
 import { z } from "zod";
-import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import type { CollectPayload, Config } from "../types";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { CollectPayload } from "../types";
 import { db, schema } from "../utils/db";
-
 
 export default async function collectRoute(fastify: FastifyInstance) {
   // Hook-based authentication approach
@@ -154,5 +153,3 @@ export default async function collectRoute(fastify: FastifyInstance) {
     }
   });
 }
-
-

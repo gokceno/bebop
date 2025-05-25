@@ -32,7 +32,7 @@ fastify.register(graphqlRoute);
 // Run the server
 const start = async () => {
   try {
-    await fastify.listen({ port: 3000 });
+    await fastify.listen({ port: 3000, host: "0.0.0.0" });
     logger.info("Server listening on http://0.0.0.0:3000");
   } catch (err) {
     logger.error(err);
