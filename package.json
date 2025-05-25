@@ -1,6 +1,7 @@
 {
   "name": "bebop",
   "type": "module",
+  "version": "0.0.0",
   "packageManager": "bun@1.2.13",
   "devDependencies": {
     "turbo": "^2.5.3"
