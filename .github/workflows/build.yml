@@ -23,4 +23,4 @@ jobs:
         with:
           build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           push: true
-          tags: ghcr.io/gokceno/bebop:latest
+          tags: ghcr.io/gokceno/bebop-server:latest

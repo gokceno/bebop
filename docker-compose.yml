@@ -9,3 +9,4 @@ services:
       - 3000
     volumes:
       - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
+      - ./apps/server/bebop.yml:/app/bebop.yml
