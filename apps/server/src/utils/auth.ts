@@ -1,14 +1,9 @@
 import fastifyJwt from "@fastify/jwt";
 import fastifyAuth from "@fastify/auth";
-import { FastifyInstance, FastifyRequest } from "fastify";
-import { Config } from "../types";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import type { Config } from "../types";
 
-interface JwtPayload {
-  userId?: string;
-  roles?: string[];
-  level?: number;
-  [key: string]: unknown;
-}
+
 
 export function setupAuth(fastify: FastifyInstance, config: Config): void {
   fastify.register(fastifyJwt, {
@@ -50,23 +45,4 @@ export function setupAuth(fastify: FastifyInstance, config: Config): void {
   });
 }
 
-// Type augmentation for Fastify
-declare module "fastify" {
-  interface FastifyInstance {
-    verifyJWT: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
-    verifyBearer: (
-      request: FastifyRequest,
-      reply: FastifyReply
-    ) => Promise<void>;
-  }
 
-  interface FastifyRequest {
-    jwt?: {
-      user?: JwtPayload;
-      [key: string]: unknown;
-    };
-    authMethod?: "jwt" | "bearer";
-    jwtPayload?: any;
-    bearerToken?: string;
-  }
-}

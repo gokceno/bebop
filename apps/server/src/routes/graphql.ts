@@ -3,13 +3,13 @@ import { createSchema, createYoga } from "graphql-yoga";
 import { typeDefs, resolvers } from "../graphql/schema";
 
 export default async function graphqlRoute(fastify: FastifyInstance) {
-  const schema = createSchema({
+  const graphqlSchema = createSchema({
     typeDefs,
     resolvers,
   });
 
   const yoga = createYoga({
-    schema,
+    schema: graphqlSchema,
     graphiql: true,
     cors: {
       origin: "*",
@@ -22,7 +22,7 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
       const response = await yoga.handleNodeRequestAndResponse(req, reply);
       return response;
     } catch (error) {
-      fastify["logger"].error(error);
+      fastify.logger.error(error);
       reply.code(500).send({ error: "Internal server error" });
     }
   };

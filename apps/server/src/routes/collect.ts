@@ -1,7 +1,8 @@
 import { z } from "zod";
-import type { FastifyInstance, FastifyRequest } from "fastify";
-import type { CollectPayload } from "../types";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import type { CollectPayload, Config } from "../types";
 import { db, schema } from "../utils/db";
+
 
 export default async function collectRoute(fastify: FastifyInstance) {
   // Hook-based authentication approach
@@ -30,7 +31,7 @@ export default async function collectRoute(fastify: FastifyInstance) {
     const jwtPayload = (request as any).jwtPayload;
 
     // Dynamically build the schema from config
-    const eventTypes = fastify["config"].eventTypes || [];
+    const eventTypes = fastify.config.eventTypes || [];
 
     // Create union of event type literals
     const eventLiterals = eventTypes.map((et: any) => z.literal(et.type));
@@ -75,19 +76,19 @@ export default async function collectRoute(fastify: FastifyInstance) {
 
       const validatedPayload: any = payloadSchema.safeParse(body);
       if (!validatedPayload.success) {
-        fastify["logger"].error(validatedPayload.error);
+        fastify.logger.error(validatedPayload.error);
         throw new Error(`Invalid payload.`);
       }
 
-      fastify["logger"].debug(`Event: ${validatedPayload.data.$event}`);
-      fastify["logger"].debug(
+      fastify.logger.debug(`Event: ${validatedPayload.data.$event}`);
+      fastify.logger.debug(
         `Validated params: ${JSON.stringify(validatedPayload.data.$params)}`
       );
-      fastify["logger"].debug(
+      fastify.logger.debug(
         `Validated trace: ${JSON.stringify(validatedPayload.data.$trace)}`
       );
       if (jwtPayload)
-        fastify["logger"].debug(
+        fastify.logger.debug(
           `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
         );
 
@@ -145,7 +146,7 @@ export default async function collectRoute(fastify: FastifyInstance) {
         },
       });
     } catch (error) {
-      fastify["logger"].error(`Error processing collect request: ${error}`);
+      fastify.logger.error(`Error processing collect request: ${error}`);
       return reply.status(500).send({
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -153,3 +154,5 @@ export default async function collectRoute(fastify: FastifyInstance) {
     }
   });
 }
+
+

@@ -1,11 +1,12 @@
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify from "fastify";
 import { yaml } from "./utils/config";
 import { logger } from "./utils/logger";
 import { db } from "./utils/db";
 import { setupAuth } from "./utils/auth";
 import collectRoute from "./routes/collect";
 import graphqlRoute from "./routes/graphql";
-import { Config } from "./types";
+import type { Config } from "./types";
+import type { FastifyInstance } from "fastify";
 
 const config: Config = yaml("bebop.yml");
 
