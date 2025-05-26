@@ -4,7 +4,6 @@ import type { CollectPayload } from "../types";
 import { db, schema } from "../utils/db";
 
 export default async function collectRoute(fastify: FastifyInstance) {
-  // Hook-based authentication approach
   fastify.addHook(
     "preHandler",
     fastify.auth([fastify.verifyJWT, fastify.verifyBearer])

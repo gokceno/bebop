@@ -19,13 +19,22 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
 
   const graphqlHandler = async (req: FastifyRequest, reply: FastifyReply) => {
     try {
-      const response = await yoga.handleNodeRequestAndResponse(req, reply);
+      const response = await yoga.handleNodeRequestAndResponse(req, reply, {
+        jwtPayload: req?.jwtPayload,
+        authMethod: req?.authMethod,
+        logger: fastify.logger,
+      } as object);
       return response;
     } catch (error) {
       fastify.logger.error(error);
       reply.code(500).send({ error: "Internal server error" });
     }
   };
+
+  fastify.addHook(
+    "preHandler",
+    fastify.auth([fastify.verifyJWT, fastify.verifyBearer])
+  );
 
   fastify.get("/graphql", graphqlHandler);
   fastify.post("/graphql", graphqlHandler);

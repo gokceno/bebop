@@ -1,9 +1,7 @@
 import fastifyJwt from "@fastify/jwt";
 import fastifyAuth from "@fastify/auth";
-import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { Config } from "../types";
-
-
 
 export function setupAuth(fastify: FastifyInstance, config: Config): void {
   fastify.register(fastifyJwt, {
@@ -44,5 +42,3 @@ export function setupAuth(fastify: FastifyInstance, config: Config): void {
     }
   });
 }
-
-

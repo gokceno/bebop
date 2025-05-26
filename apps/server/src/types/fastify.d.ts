@@ -6,6 +6,7 @@ import type * as schema from "../schema";
 
 interface JwtPayload {
   userId?: string;
+  email?: string;
   roles?: string[];
   level?: number;
   [key: string]: unknown;
@@ -29,7 +30,7 @@ declare module "fastify" {
       [key: string]: unknown;
     };
     authMethod?: "jwt" | "bearer";
-    jwtPayload?: any;
+    jwtPayload?: JwtPayload;
     bearerToken?: string;
   }
 }
