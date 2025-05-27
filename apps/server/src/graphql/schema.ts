@@ -1,11 +1,12 @@
 import { JSONResolver, JSONDefinition } from "graphql-scalars";
 import { DateTime } from "luxon";
-import { db } from "../utils/db";
 import { events } from "../schema";
 import { desc, asc } from "drizzle-orm";
+import type { GraphQLEventQueryArgs, GraphQLContext } from "../types";
 
 export const typeDefs = `
   ${JSONDefinition}
+
   type Query {
     me: String
     events(limit: Int = 50, offset: Int = 0, orderBy: String = "createdAt", orderDirection: String = "desc"): [Event]
@@ -25,18 +26,13 @@ export const resolvers = {
     createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
   },
   Query: {
-    me: (_: any, __: any, context: any) => {
+    me: (_: any, __: any, context: GraphQLContext) => {
       return context.jwtPayload?.Email || null;
     },
     events: async (
       _: any,
-      args: {
-        limit?: number;
-        offset?: number;
-        orderBy?: string;
-        orderDirection?: string;
-      },
-      context: any
+      args: GraphQLEventQueryArgs,
+      context: GraphQLContext
     ) => {
       const {
         limit = 50,
@@ -45,20 +41,16 @@ export const resolvers = {
         orderDirection = "desc",
       } = args;
 
-      // Ensure limit doesn't exceed 100
-      const finalLimit = Math.min(limit, 100);
-
-      // Determine sort order
       const orderField =
         orderBy === "eventName" ? events.eventName : events.createdAt;
       const orderFunc = orderDirection === "asc" ? asc : desc;
 
       try {
-        const result = await db
-          .select()
+        const result = context.db
+          ?.select()
           .from(events)
           .orderBy(orderFunc(orderField))
-          .limit(finalLimit)
+          .limit(Math.min(limit, 100))
           .offset(offset);
 
         return result;
