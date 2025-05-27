@@ -17,12 +17,35 @@ export const typeDefs = `
     eventName: String
     originator: JSON
     createdAt: String
+    params: [EventParam]
+    traces: [EventTrace]
+  }
+
+  type EventParam {
+    id: ID
+    eventId: String
+    paramName: String
+    paramValue: String
+    createdAt: String
+  }
+
+  type EventTrace {
+    id: ID
+    eventId: String
+    traceData: JSON
+    createdAt: String
   }
 `;
 
 export const resolvers = {
   JSON: JSONResolver,
   Event: {
+    createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
+  },
+  EventParam: {
+    createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
+  },
+  EventTrace: {
     createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
   },
   Query: {
@@ -41,19 +64,22 @@ export const resolvers = {
         orderDirection = "desc",
       } = args;
 
-      const orderField =
-        orderBy === "eventName" ? events.eventName : events.createdAt;
-      const orderFunc = orderDirection === "asc" ? asc : desc;
-
       try {
-        const result = context.db
-          ?.select()
-          .from(events)
-          .orderBy(orderFunc(orderField))
-          .limit(Math.min(limit, 100))
-          .offset(offset);
+        const orderField =
+          orderBy === "eventName" ? events.eventName : events.createdAt;
+        const orderFunc = orderDirection === "asc" ? asc : desc;
 
-        return result;
+        return (
+          (await context?.db?.query.events.findMany({
+            limit,
+            offset,
+            with: {
+              params: true,
+              traces: true,
+            },
+            orderBy: () => [orderFunc(orderField)],
+          })) || []
+        );
       } catch (error) {
         context.logger?.error("Error fetching events:", error);
         throw new Error("Failed to fetch events");

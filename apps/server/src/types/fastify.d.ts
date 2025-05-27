@@ -1,16 +1,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import type { Config } from ".";
+import type { Config, JWTPayload } from ".";
 import type { Logger } from "winston";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type * as schema from "../schema";
-
-interface JwtPayload {
-  userId?: string;
-  email?: string;
-  roles?: string[];
-  level?: number;
-  [key: string]: unknown;
-}
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -26,11 +18,11 @@ declare module "fastify" {
 
   interface FastifyRequest {
     jwt?: {
-      user?: JwtPayload;
+      user?: JWTPayload;
       [key: string]: unknown;
     };
     authMethod?: "jwt" | "bearer";
-    jwtPayload?: JwtPayload;
+    jwtPayload?: JWTPayload;
     bearerToken?: string;
   }
 }
