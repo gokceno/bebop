@@ -10,6 +10,20 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
 
   const yoga = createYoga({
     schema: schema as any,
+    logging: {
+      debug(...args) {
+        fastify.logger.debug([...args]);
+      },
+      info(...args) {
+        fastify.logger.info([...args]);
+      },
+      warn(...args) {
+        fastify.logger.warn([...args]);
+      },
+      error(...args) {
+        fastify.logger.error([...args]);
+      },
+    },
     graphiql: true,
     cors: {
       origin: "*",
