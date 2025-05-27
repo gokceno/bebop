@@ -25,6 +25,7 @@
     "drizzle-orm": "^0.42.0",
     "fastify": "^5.3.3",
     "graphql": "^16.11.0",
+    "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.13.5",
     "luxon": "^3.6.1",
     "winston": "^3.17.0",

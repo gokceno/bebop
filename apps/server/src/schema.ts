@@ -10,7 +10,7 @@ export const events = sqliteTable("events", {
   eventName: text("event_name"),
   originator: text("originator", { mode: "json" }),
   createdAt: int("created_at", { mode: "timestamp" }).default(
-    sql`CURRENT_TIMESTAMP`
+    sql`(unixepoch())`
   ),
 });
 
@@ -22,7 +22,7 @@ export const eventsParams = sqliteTable("events_params", {
   paramName: text("param_name"),
   paramValue: text("param_value"),
   createdAt: int("created_at", { mode: "timestamp" }).default(
-    sql`CURRENT_TIMESTAMP`
+    sql`(unixepoch())`
   ),
 });
 
@@ -33,7 +33,7 @@ export const eventsTraces = sqliteTable("events_traces", {
   eventId: text("event_id"),
   traceData: text("trace_data", { mode: "json" }),
   createdAt: int("created_at", { mode: "timestamp" }).default(
-    sql`CURRENT_TIMESTAMP`
+    sql`(unixepoch())`
   ),
 });
 

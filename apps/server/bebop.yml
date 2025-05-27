@@ -5,6 +5,8 @@ auth:
   jwt:
     secret: bebop-analytics-super-secret-key
     max_age: 1d
+    originator_id: Email
+    originator_role: Role
 event_types:
   - type: like
     params:
