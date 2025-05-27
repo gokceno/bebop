@@ -28,6 +28,9 @@ export type GraphQLEventQueryArgs = {
   offset?: number;
   orderBy?: string;
   orderDirection?: "asc" | "desc";
+  where: {
+    [key: string]: string;
+  };
 };
 
 export type GraphQLContext = {

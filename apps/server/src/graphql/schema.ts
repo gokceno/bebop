@@ -1,15 +1,26 @@
 import { JSONResolver, JSONDefinition } from "graphql-scalars";
 import { DateTime } from "luxon";
 import { events } from "../schema";
-import { desc, asc } from "drizzle-orm";
+import { desc, asc, sql } from "drizzle-orm";
 import type { GraphQLEventQueryArgs, GraphQLContext } from "../types";
 
 export const typeDefs = `
   ${JSONDefinition}
 
+  input EventWhereInput {
+    email: String
+    eventName: String
+  }
+
   type Query {
     me: String
-    events(limit: Int = 50, offset: Int = 0, orderBy: String = "createdAt", orderDirection: String = "desc"): [Event]
+    events(
+      limit: Int = 50,
+      offset: Int = 0,
+      orderBy: String = "createdAt",
+      orderDirection: String = "desc",
+      where: EventWhereInput
+    ): [Event]
   }
 
   type Event {
@@ -62,12 +73,21 @@ export const resolvers = {
         offset = 0,
         orderBy = "createdAt",
         orderDirection = "desc",
+        where,
       } = args;
 
       try {
         const orderField =
           orderBy === "eventName" ? events.eventName : events.createdAt;
         const orderFunc = orderDirection === "asc" ? asc : desc;
+
+        const conditions = [];
+        if (where?.email) {
+          conditions.push(sql`${events.originator}->>'Email' = ${where.email}`);
+        }
+        if (where?.eventName) {
+          conditions.push(sql`${events.eventName} = ${where.eventName}`);
+        }
 
         return (
           (await context?.db?.query.events.findMany({
@@ -77,6 +97,9 @@ export const resolvers = {
               params: true,
               traces: true,
             },
+            where: conditions.reduce((acc, condition, index) =>
+              index === 0 ? condition : sql`${acc} AND ${condition}`
+            ),
             orderBy: () => [orderFunc(orderField)],
           })) || []
         );
