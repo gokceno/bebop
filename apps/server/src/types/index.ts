@@ -26,10 +26,13 @@ export type CollectPayload = {
 export type GraphQLEventQueryArgs = {
   limit?: number;
   offset?: number;
-  orderBy?: string;
-  orderDirection?: "asc" | "desc";
-  where: {
-    [key: string]: string;
+  order?: "asc" | "desc";
+  where?: {
+    email?: string;
+    eventName?: string;
+    params?: {
+      [key: string]: string;
+    };
   };
 };
 
@@ -38,6 +41,7 @@ export type GraphQLContext = {
   authMethod?: string;
   logger?: Logger;
   db?: LibSQLDatabase<typeof schema>;
+  config?: Config;
 };
 
 export type JWTPayload = {

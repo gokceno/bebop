@@ -1,15 +1,54 @@
 import { JSONResolver, JSONDefinition } from "graphql-scalars";
 import { DateTime } from "luxon";
 import { events } from "../schema";
-import { desc, asc, sql } from "drizzle-orm";
-import type { GraphQLEventQueryArgs, GraphQLContext } from "../types";
+import { desc, asc, sql, SQL } from "drizzle-orm";
+import type { GraphQLEventQueryArgs, GraphQLContext, Config } from "../types";
 
-export const typeDefs = `
+// Function to generate dynamic parameter input types based on config
+const generateParamInputTypes = (config: Config): string => {
+  const paramInputs = config.eventTypes
+    .map((eventType) => {
+      const paramFields = eventType.params
+        .map((paramObj) => {
+          const paramName = Object.keys(paramObj)[0];
+          const paramType = paramObj[paramName];
+          const graphqlType = paramType === "numeric" ? "Float" : "String";
+          return `${paramName}: ${graphqlType}`;
+        })
+        .join("\n");
+
+      if (paramFields) {
+        return `input ${eventType.type}ParamsInput {\n${paramFields}\n  }`;
+      }
+      return "";
+    })
+    .filter(Boolean);
+
+  return paramInputs.join("\n\n");
+};
+
+// Function to generate the main params input with all event type params
+const generateMainParamsInput = (config: Config): string => {
+  const eventTypeFields = config.eventTypes
+    .map((eventType) => {
+      return `${eventType.type}: ${eventType.type}ParamsInput`;
+    })
+    .join("\n");
+
+  return `input EventParamsInput {\n${eventTypeFields}\n  }`;
+};
+
+export const createTypeDefs = (config: Config) => `
   ${JSONDefinition}
+
+  ${generateParamInputTypes(config)}
+
+  ${generateMainParamsInput(config)}
 
   input EventWhereInput {
     email: String
     eventName: String
+    params: EventParamsInput
   }
 
   type Query {
@@ -17,8 +56,7 @@ export const typeDefs = `
     events(
       limit: Int = 50,
       offset: Int = 0,
-      orderBy: String = "createdAt",
-      orderDirection: String = "desc",
+      order: String = "desc",
       where: EventWhereInput
     ): [Event]
   }
@@ -48,6 +86,12 @@ export const typeDefs = `
   }
 `;
 
+// Default typeDefs for backward compatibility
+export const typeDefs = createTypeDefs({
+  auth: { bearerTokens: [], jwt: { secret: "", maxAge: "" } },
+  eventTypes: [],
+});
+
 export const resolvers = {
   JSON: JSONResolver,
   Event: {
@@ -68,26 +112,61 @@ export const resolvers = {
       args: GraphQLEventQueryArgs,
       context: GraphQLContext
     ) => {
-      const {
-        limit = 50,
-        offset = 0,
-        orderBy = "createdAt",
-        orderDirection = "desc",
-        where,
-      } = args;
+      const { limit = 50, offset = 0, order = "desc", where } = args;
 
       try {
-        const orderField =
-          orderBy === "eventName" ? events.eventName : events.createdAt;
-        const orderFunc = orderDirection === "asc" ? asc : desc;
-
+        const orderFunc = order === "asc" ? asc : desc;
         const conditions = [];
+
         if (where?.email) {
           conditions.push(sql`${events.originator}->>'Email' = ${where.email}`);
         }
         if (where?.eventName) {
           conditions.push(sql`${events.eventName} = ${where.eventName}`);
         }
+
+        // Handle dynamic parameter filtering
+        if (where?.params && context?.config) {
+          const paramConditions: SQL[] = [];
+
+          // Iterate through each event type in params
+          Object.keys(where.params).forEach((eventType) => {
+            const eventParams = (where.params as any)[eventType];
+            if (eventParams && Object.keys(eventParams).length > 0) {
+              // For each parameter in this event type
+              Object.keys(eventParams).forEach((paramName) => {
+                const paramValue = eventParams[paramName];
+                if (paramValue !== undefined && paramValue !== null) {
+                  // Create a condition that checks both the event name and parameter
+                  paramConditions.push(
+                    sql`EXISTS (
+                      SELECT 1 FROM events_params ep
+                      WHERE ep.event_id = ${events.id}
+                      AND ep.param_name = ${paramName}
+                      AND ep.param_value = ${paramValue.toString()}
+                      AND ${events.eventName} = ${eventType}
+                    )`
+                  );
+                }
+              });
+            }
+          });
+
+          if (paramConditions.length > 0) {
+            conditions.push(
+              paramConditions.reduce((acc, condition, index) =>
+                index === 0 ? condition : sql`${acc} AND ${condition}`
+              )
+            );
+          }
+        }
+
+        const whereClause =
+          conditions.length > 0
+            ? conditions.reduce((acc, condition, index) =>
+                index === 0 ? condition : sql`${acc} AND ${condition}`
+              )
+            : undefined;
 
         return (
           (await context?.db?.query.events.findMany({
@@ -97,10 +176,8 @@ export const resolvers = {
               params: true,
               traces: true,
             },
-            where: conditions.reduce((acc, condition, index) =>
-              index === 0 ? condition : sql`${acc} AND ${condition}`
-            ),
-            orderBy: () => [orderFunc(orderField)],
+            where: whereClause,
+            orderBy: () => [orderFunc(events.createdAt)],
           })) || []
         );
       } catch (error) {

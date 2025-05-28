@@ -1,8 +1,10 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { createSchema, createYoga } from "graphql-yoga";
-import { typeDefs, resolvers } from "../graphql/schema";
+import { createTypeDefs, resolvers } from "../graphql/schema";
 
 export default async function graphqlRoute(fastify: FastifyInstance) {
+  const typeDefs = createTypeDefs(fastify.config);
+  
   const schema = createSchema({
     typeDefs,
     resolvers,
@@ -38,6 +40,7 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
         authMethod: req?.authMethod,
         logger: fastify.logger,
         db: fastify.db,
+        config: fastify.config,
       } as object);
       return response;
     } catch (error) {
