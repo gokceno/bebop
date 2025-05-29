@@ -1,5 +1,5 @@
 {
-  "name": "bebop-server",
+  "name": "@gokceno/bebop-server",
   "type": "module",
   "version": "0.2.0",
   "packageManager": "bun@1.2.13",
