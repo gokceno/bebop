@@ -1,0 +1,28 @@
+{
+  "name": "@gokceno/bebop-client",
+  "type": "module",
+  "version": "0.0.0",
+  "repository": "git+https://github.com/gokceno/bebop.git",
+  "packageManager": "bun@1.2.13",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node --format esm --sourcemap && tsc --emitDeclarationOnly --outDir dist"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "got": "^14.4.7",
+    "p-queue": "^8.1.0"
+  }
+}
