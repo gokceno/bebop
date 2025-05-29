@@ -12,7 +12,26 @@ post {
 
 body:graphql {
   query {
-    hello
+    events(
+      where: {
+        eventName: "postContent"
+        params: { postContent: { creatorId: "abc123" } }
+      }
+      limit: 1
+      order: "desc"
+    ) {
+      id
+      eventName
+      createdAt
+      originator
+      params {
+        paramName
+        paramValue
+      }
+      traces {
+        traceData
+      }
+    }
   }
   
 }
