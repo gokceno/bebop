@@ -30,13 +30,17 @@ jobs:
         with:
           node-version: "18"
           registry-url: "https://npm.pkg.github.com"
-          scope: "@gokceno"
 
       - name: Install Dependencies
         run: bun install
 
       - name: Build Packages
         run: bun run build
+
+      - name: Configure npm for GitHub Package Registry only
+        run: |
+          echo "@gokceno:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
 
       - name: Version and Publish
         run: |
