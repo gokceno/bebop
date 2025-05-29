@@ -28,12 +28,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@gokceno'
+          node-version: "18"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@gokceno"
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Build Packages
         run: bun run build
