@@ -21,8 +21,7 @@
   "files": [
     "dist",
     "README.md",
-    "EXAMPLES.md",
-    "MIGRATION.md"
+    "EXAMPLES.md"
   ],
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node --format esm --sourcemap && bun build src/browser.ts --outdir dist --target browser --format esm --sourcemap && tsc --emitDeclarationOnly --outDir dist"
