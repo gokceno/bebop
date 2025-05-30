@@ -13,8 +13,15 @@
         "typescript": "^5.0.0",
       },
     },
+    "apps/sample": {
+      "name": "bebop-sample-app",
+      "version": "1.0.0",
+      "dependencies": {
+        "@gokceno/bebop-client": "0.1.0",
+      },
+    },
     "apps/server": {
-      "name": "bebop-server",
+      "name": "@gokceno/bebop-server",
       "version": "0.2.0",
       "dependencies": {
         "@fastify/auth": "^5.0.2",
@@ -43,14 +50,14 @@
       },
     },
     "packages/client": {
-      "name": "bebop-client",
-      "version": "0.0.0",
+      "name": "@gokceno/bebop-client",
+      "version": "0.1.0",
       "dependencies": {
         "got": "^14.4.7",
         "p-queue": "^8.1.0",
       },
       "devDependencies": {
-        "@types/bun": "^1.2.10",
+        "typescript": "^5.0.0",
       },
       "peerDependencies": {
         "typescript": "^5.0.0",
@@ -182,6 +189,10 @@
 
     "@fastify/proxy-addr": ["@fastify/proxy-addr@5.0.0", "", { "dependencies": { "@fastify/forwarded": "^3.0.0", "ipaddr.js": "^2.1.0" } }, "sha512-37qVVA1qZ5sgH7KpHkkC4z9SK6StIsIcOmpjvMPXNb3vx2GQxhZocogVYbr2PbbeLCQxYIPDok307xEvRZOzGA=="],
 
+    "@gokceno/bebop-client": ["@gokceno/bebop-client@workspace:packages/client"],
+
+    "@gokceno/bebop-server": ["@gokceno/bebop-server@workspace:apps/server"],
+
     "@graphql-tools/executor": ["@graphql-tools/executor@1.4.7", "", { "dependencies": { "@graphql-tools/utils": "^10.8.6", "@graphql-typed-document-node/core": "^3.2.0", "@repeaterjs/repeater": "^3.0.4", "@whatwg-node/disposablestack": "^0.0.6", "@whatwg-node/promise-helpers": "^1.0.0", "tslib": "^2.4.0" }, "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, "sha512-U0nK9jzJRP9/9Izf1+0Gggd6K6RNRsheFo1gC/VWzfnsr0qjcOSS9qTjY0OTC5iTPt4tQ+W5Zpw/uc7mebI6aA=="],
 
     "@graphql-tools/merge": ["@graphql-tools/merge@9.0.24", "", { "dependencies": { "@graphql-tools/utils": "^10.8.6", "tslib": "^2.4.0" }, "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, "sha512-NzWx/Afl/1qHT3Nm1bghGG2l4jub28AdvtG11PoUlmjcIjnFBJMv4vqL0qnxWe8A82peWo4/TkVdjJRLXwgGEw=="],
@@ -298,9 +309,7 @@
 
     "avvio": ["avvio@9.1.0", "", { "dependencies": { "@fastify/error": "^4.0.0", "fastq": "^1.17.1" } }, "sha512-fYASnYi600CsH/j9EQov7lECAniYiBFiiAtBNuZYLA2leLe9qOvZzqYHFjtIj6gD2VMoMLP14834LFWvr4IfDw=="],
 
-    "bebop-client": ["bebop-client@workspace:packages/client"],
-
-    "bebop-server": ["bebop-server@workspace:apps/server"],
+    "bebop-sample-app": ["bebop-sample-app@workspace:apps/sample"],
 
     "better-path-resolve": ["better-path-resolve@1.0.0", "", { "dependencies": { "is-windows": "^1.0.0" } }, "sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g=="],
 

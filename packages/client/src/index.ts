@@ -48,3 +48,5 @@ export const Bebop: BebopFactory = ({
     },
   };
 };
+
+export type { BebopClient, BebopConfig, BebopFactory, BebopSendArgs };
