@@ -1,0 +1,19 @@
+{
+  "name": "bebop-sample-app",
+  "version": "1.0.1",
+  "description": "Sample application using Bebop client",
+  "main": "index.js",
+  "scripts": {
+    "start": "bun index.js",
+    "dev": "bun index.js"
+  },
+  "dependencies": {
+    "@gokceno/bebop-client": "0.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gokceno/bebop.git"
+  },
+  "author": "",
+  "license": "ISC"
+}

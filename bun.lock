@@ -15,9 +15,9 @@
     },
     "apps/sample": {
       "name": "bebop-sample-app",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "dependencies": {
-        "@gokceno/bebop-client": "0.1.0",
+        "@gokceno/bebop-client": "0.1.1",
       },
     },
     "apps/server": {
@@ -51,7 +51,7 @@
     },
     "packages/client": {
       "name": "@gokceno/bebop-client",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "got": "^14.4.7",
         "p-queue": "^8.1.0",
