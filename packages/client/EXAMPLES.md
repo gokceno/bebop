@@ -14,11 +14,7 @@ import { Bebop } from '@gokceno/bebop-client';
 const analytics = Bebop({
   baseUrl: 'https://analytics.example.com',
   bearerToken: process.env.NEXT_PUBLIC_BEBOP_TOKEN,
-  batching: {
-    enabled: true,
-    maxBatchSize: 10,
-    flushInterval: 2000
-  }
+  concurrency: 3 // Process up to 3 requests simultaneously
   // ✨ Uses native fetch + shared queue (zero dependencies)
 });
 
@@ -52,7 +48,7 @@ import { Bebop } from '@gokceno/bebop-client';
 const client = Bebop({
   baseUrl: 'https://analytics.example.com',
   bearerToken: process.env.NEXT_PUBLIC_BEBOP_TOKEN,
-  batching: { enabled: true }
+  concurrency: 2 // Limit concurrent requests
   // ✨ Same implementation as Node.js version
 });
 
@@ -65,13 +61,11 @@ export default function ProductPage({ product }) {
       category: product.category
     });
 
-    // 📦 Track multiple user journey events as batch
+    // 🚀 Track user journey events individually
     const trackUserJourney = () => {
-      client.batch([
-        { eventName: 'product_viewed', eventParams: { productId: product.id } },
-        { eventName: 'category_browsed', eventParams: { category: product.category } },
-        { eventName: 'price_viewed', eventParams: { price: product.price } }
-      ]);
+      client.sendAsync('product_viewed', { productId: product.id });
+      client.sendAsync('category_browsed', { category: product.category });
+      client.sendAsync('price_viewed', { price: product.price });
     };
 
     const timer = setTimeout(trackUserJourney, 3000);
@@ -111,11 +105,7 @@ const useAnalytics = () => {
   const client = Bebop({
     baseUrl: process.env.NEXT_PUBLIC_BEBOP_URL,
     bearerToken: process.env.NEXT_PUBLIC_BEBOP_TOKEN,
-    batching: {
-      enabled: true,
-      maxBatchSize: 15,
-      flushInterval: 1500
-    },
+    concurrency: 5, // Higher concurrency for better performance
     output: process.env.NODE_ENV === 'development'
   });
 
@@ -129,17 +119,15 @@ const useAnalytics = () => {
     });
   }, []);
 
-  // 📦 Batch multiple related events
+  // 🚀 Track multiple related events
   const trackUserFlow = useCallback((events) => {
-    const enrichedEvents = events.map(event => ({
-      ...event,
-      eventParams: {
+    events.forEach(event => {
+      client.sendAsync(event.eventName, {
         ...event.eventParams,
         sessionId: sessionStorage.getItem('sessionId'),
         timestamp: Date.now()
-      }
-    }));
-    client.batch(enrichedEvents);
+      }, event.eventTrace);
+    });
   }, []);
 
   // ⏳ Flush on page unload
@@ -166,7 +154,7 @@ function SearchComponent() {
   };
 
   const handleFilterChange = (filters) => {
-    // 📦 Track related events together
+    // 🚀 Track related events
     trackUserFlow([
       { eventName: 'filter_applied', eventParams: { filters } },
       { eventName: 'results_filtered', eventParams: { count: newResults.length } },
@@ -192,12 +180,7 @@ const app = express();
 const analytics = Bebop({
   baseUrl: 'https://internal-analytics.company.com',
   jwt: process.env.BEBOP_JWT,
-  concurrency: 20,
-  batching: {
-    enabled: true,
-    maxBatchSize: 50,
-    flushInterval: 500
-  },
+  concurrency: 20, // High concurrency for server workloads
   output: process.env.NODE_ENV !== 'production'
   // ✨ Native fetch + shared queue = better performance than got/p-queue
 });
@@ -215,26 +198,19 @@ app.use((req, res, next) => {
   });
 
   res.on('finish', () => {
-    // 📦 Batch request completion data
-    analytics.batch([
-      {
-        eventName: 'request_completed',
-        eventParams: {
-          method: req.method,
-          path: req.path,
-          statusCode: res.statusCode,
-          duration: Date.now() - startTime
-        }
-      },
-      {
-        eventName: 'performance_metric',
-        eventParams: {
-          type: 'response_time',
-          value: Date.now() - startTime,
-          endpoint: req.path
-        }
-      }
-    ]);
+    // 🚀 Track request completion
+    analytics.sendAsync('request_completed', {
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      duration: Date.now() - startTime
+    });
+    
+    analytics.sendAsync('performance_metric', {
+      type: 'response_time',
+      value: Date.now() - startTime,
+      endpoint: req.path
+    });
   });
 
   next();
@@ -256,12 +232,7 @@ import { Bebop } from '@gokceno/bebop-client';
 const analytics = Bebop({
   baseUrl: process.env.ANALYTICS_URL,
   jwt: process.env.JWT_TOKEN,
-  concurrency: 10,
-  batching: {
-    enabled: true,
-    maxBatchSize: 100,
-    flushInterval: 1000
-  }
+  concurrency: 10
   // ✨ Zero dependencies, native fetch everywhere
 });
 
@@ -279,25 +250,18 @@ class JobProcessor {
 
       const result = await this.executeJob(job);
 
-      // 📦 Batch success metrics
-      analytics.batch([
-        {
-          eventName: 'job_completed',
-          eventParams: {
-            jobId: job.id,
-            duration: Date.now() - startTime,
-            status: 'success'
-          }
-        },
-        {
-          eventName: 'performance_metric',
-          eventParams: {
-            type: 'job_duration',
-            jobType: job.type,
-            duration: Date.now() - startTime
-          }
-        }
-      ]);
+      // 🚀 Track success metrics
+      analytics.sendAsync('job_completed', {
+        jobId: job.id,
+        duration: Date.now() - startTime,
+        status: 'success'
+      });
+      
+      analytics.sendAsync('performance_metric', {
+        type: 'job_duration',
+        jobType: job.type,
+        duration: Date.now() - startTime
+      });
 
       return result;
     } catch (error) {
@@ -322,12 +286,7 @@ import { Bebop } from '@gokceno/bebop-client';
 const analytics = Bebop({
   baseUrl: process.env.ANALYTICS_URL,
   bearerToken: process.env.BEARER_TOKEN,
-  concurrency: 50,
-  batching: {
-    enabled: true,
-    maxBatchSize: 200,
-    flushInterval: 100 // Very fast for real-time
-  }
+  concurrency: 50 // High concurrency for real-time processing
   // ✨ Unified implementation = same performance characteristics everywhere
 });
 
@@ -360,23 +319,16 @@ class DataPipeline {
 
     const batch = this.eventBuffer.splice(0);
     
-    // 📦 Batch processing metrics
-    analytics.batch([
-      {
-        eventName: 'batch_processed',
-        eventParams: {
-          batchSize: batch.length,
-          processedAt: Date.now()
-        }
-      },
-      {
-        eventName: 'pipeline_metrics',
-        eventParams: {
-          throughput: batch.length,
-          bufferSize: this.eventBuffer.length
-        }
-      }
-    ]);
+    // 🚀 Track processing metrics
+    analytics.sendAsync('batch_processed', {
+      batchSize: batch.length,
+      processedAt: Date.now()
+    });
+    
+    analytics.sendAsync('pipeline_metrics', {
+      throughput: batch.length,
+      bufferSize: this.eventBuffer.length
+    });
 
     // Process batch asynchronously
     this.processBatchAsync(batch);
@@ -405,7 +357,7 @@ button.addEventListener('click', async () => {
 // ✅ NON-BLOCKING - Instant user experience
 const fastClient = Bebop({
   baseUrl: 'https://analytics.com',
-  batching: { enabled: true }
+  concurrency: 3 // Optimal for frontend
   // ✨ Same unified implementation, zero dependencies
 });
 
@@ -422,7 +374,6 @@ button.addEventListener('click', () => {
 const createClient = (env) => Bebop({
   baseUrl: 'https://analytics.com',
   bearerToken: env === 'browser' ? window.BEBOP_TOKEN : process.env.BEBOP_TOKEN,
-  batching: { enabled: true },
   concurrency: env === 'browser' ? 3 : 10
   // Uses native fetch + shared queue implementation everywhere!
 });
@@ -432,50 +383,43 @@ const browserClient = createClient('browser');  // Browser: fetch + SimpleQueue
 const serverClient = createClient('server');    // Node.js: fetch + SimpleQueue
 ```
 
-## 🔄 Advanced Batching Patterns
+## 🔄 Advanced Event Tracking Patterns
 
 ```javascript
 const client = Bebop({
   baseUrl: 'https://analytics.com',
   bearerToken: 'token',
-  batching: {
-    enabled: true,
-    maxBatchSize: 20,
-    flushInterval: 2000
-  }
+  concurrency: 5 // Handle multiple events efficiently
 });
 
 // Pattern 1: Page session tracking
 const trackPageSession = () => {
-  const sessionEvents = [
-    { eventName: 'session_start', eventParams: { timestamp: Date.now() } },
-    { eventName: 'page_load', eventParams: { url: location.href } },
-    { eventName: 'user_agent', eventParams: { ua: navigator.userAgent } }
-  ];
-  
-  client.batch(sessionEvents);
+  client.sendAsync('session_start', { timestamp: Date.now() });
+  client.sendAsync('page_load', { url: location.href });
+  client.sendAsync('user_agent', { ua: navigator.userAgent });
 };
 
 // Pattern 2: Form interaction tracking
 const trackFormInteraction = (formData) => {
-  const formEvents = Object.keys(formData).map(field => ({
-    eventName: 'form_field_filled',
-    eventParams: { field, hasValue: !!formData[field] }
-  }));
+  // Track individual field interactions
+  Object.keys(formData).forEach(field => {
+    client.sendAsync('form_field_filled', { 
+      field, 
+      hasValue: !!formData[field] 
+    });
+  });
   
-  client.batch([
-    ...formEvents,
-    { eventName: 'form_completion', eventParams: { totalFields: formEvents.length } }
-  ]);
+  // Track form completion
+  client.sendAsync('form_completion', { 
+    totalFields: Object.keys(formData).length 
+  });
 };
 
 // Pattern 3: E-commerce funnel
 const trackPurchaseFunnel = (user, product, payment) => {
-  client.batch([
-    { eventName: 'product_viewed', eventParams: { productId: product.id } },
-    { eventName: 'add_to_cart', eventParams: { productId: product.id, price: product.price } },
-    { eventName: 'checkout_started', eventParams: { cartValue: payment.amount } },
-    { eventName: 'payment_completed', eventParams: { userId: user.id, amount: payment.amount } }
-  ]);
+  client.sendAsync('product_viewed', { productId: product.id });
+  client.sendAsync('add_to_cart', { productId: product.id, price: product.price });
+  client.sendAsync('checkout_started', { cartValue: payment.amount });
+  client.sendAsync('payment_completed', { userId: user.id, amount: payment.amount });
 };
 ```

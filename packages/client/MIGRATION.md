@@ -2,7 +2,7 @@
 
 ## Overview
 
-Version 1.0.0 introduces a unified architecture that uses native fetch and shared code between browser and Node.js environments, eliminating external dependencies and improving performance.
+Version 1.0.0 introduces a simplified, unified architecture that uses native fetch and shared code between browser and Node.js environments, eliminating external dependencies and removing batching complexity for a cleaner API.
 
 ## Breaking Changes
 
@@ -48,48 +48,75 @@ Zero external dependencies! The package now uses:
 
 ## API Compatibility
 
-### ✅ No Changes Required
+### ✅ Core Methods Unchanged
 
-All existing API calls remain the same:
+Core API calls remain the same:
 
 ```javascript
 // These work exactly the same
 const client = Bebop({ baseUrl: 'https://...', bearerToken: 'token' });
-await client.send('event', { data: 'value' });
-client.sendAsync('event', { data: 'value' });
-await client.flush();
+await client.send('event', { data: 'value' });    // ✅ Same
+client.sendAsync('event', { data: 'value' });     // ✅ Same
+await client.flush();                              // ✅ Same
 ```
 
-### ✅ Configuration Options
+### ❌ Removed Methods
 
-All configuration options remain unchanged:
+The `batch()` method has been removed for simplicity:
 
 ```javascript
+// Before v1.0.0
+client.batch([                                     // ❌ REMOVED
+  { eventName: 'event1', eventParams: { data: 'a' } },
+  { eventName: 'event2', eventParams: { data: 'b' } }
+]);
+
+// v1.0.0 - Use individual calls instead
+client.sendAsync('event1', { data: 'a' });        // ✅ Simple
+client.sendAsync('event2', { data: 'b' });        // ✅ Clean
+```
+</edits>
+
+### ⚠️ Configuration Changes
+
+Most configuration options remain the same, but batching has been removed:
+
+```javascript
+// Before v1.0.0
 const client = Bebop({
   baseUrl: 'https://analytics.com',
-  bearerToken: 'token',        // Same
-  concurrency: 5,              // Same
-  output: true,                // Same
-  batching: {                  // Same
+  bearerToken: 'token',
+  concurrency: 5,
+  output: true,
+  batching: {                  // ❌ REMOVED
     enabled: true,
     maxBatchSize: 10,
     flushInterval: 1000
   }
 });
+
+// v1.0.0 - Simplified
+const client = Bebop({
+  baseUrl: 'https://analytics.com',
+  bearerToken: 'token',        // ✅ Same
+  concurrency: 5,              // ✅ Same
+  output: true                 // ✅ Same
+});
 ```
 
 ## Bundle Size Improvements
 
-| Version | Browser Bundle | Node.js Bundle | Dependencies |
-|---------|----------------|----------------|--------------|
-| 0.3.x   | 5.23 KB        | 288 KB         | got, p-queue |
-| 1.0.0   | 5.18 KB        | 5.18 KB        | None         |
+| Version | Browser Bundle | Node.js Bundle | Dependencies | Features |
+|---------|----------------|----------------|--------------|----------|
+| 0.3.x   | 5.23 KB        | 288 KB         | got, p-queue | Batching |
+| 1.0.0   | 3.19 KB        | 3.19 KB        | None         | Simplified |
 
 **Improvements:**
-- 📦 Node.js bundle: **98% smaller** (288KB → 5.18KB)
-- 🌐 Browser bundle: Slightly smaller
+- 📦 Node.js bundle: **99% smaller** (288KB → 3.19KB)
+- 🌐 Browser bundle: **39% smaller** (5.23KB → 3.19KB)
 - 🚀 Zero dependencies
 - ⚡ Better performance with native fetch
+- 🎯 Simplified API without batching complexity
 
 ## Performance Improvements
 
@@ -142,9 +169,45 @@ If you had manually installed got or p-queue:
 npm uninstall got p-queue
 ```
 
-### 4. Test Your Implementation
+### 4. Remove Batching Configuration
 
-No code changes required, but test to ensure everything works:
+Remove any batching configuration from your code:
+
+```javascript
+// Before v1.0.0
+const client = Bebop({
+  baseUrl: 'https://your-analytics.com',
+  bearerToken: 'your-token',
+  batching: { enabled: true } // ❌ Remove this
+});
+
+// v1.0.0
+const client = Bebop({
+  baseUrl: 'https://your-analytics.com',
+  bearerToken: 'your-token'
+  // ✅ Clean and simple
+});
+```
+
+### 5. Replace Batch Calls
+
+Replace any `batch()` calls with individual `sendAsync()` calls:
+
+```javascript
+// Before v1.0.0
+client.batch([
+  { eventName: 'event1', eventParams: { data: 'a' } },
+  { eventName: 'event2', eventParams: { data: 'b' } }
+]);
+
+// v1.0.0
+client.sendAsync('event1', { data: 'a' });
+client.sendAsync('event2', { data: 'b' });
+```
+
+### 6. Test Your Implementation
+
+Test to ensure everything works:
 
 ```javascript
 import { Bebop } from '@gokceno/bebop-client';

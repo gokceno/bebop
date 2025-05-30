@@ -5,13 +5,6 @@ import type {
   BebopSendArgs,
 } from "./types";
 
-// Event structure for batching
-export interface BatchedEvent {
-  eventName: string;
-  eventParams?: object;
-  eventTrace?: object[];
-}
-
 // Simple queue implementation that works in both browser and Node.js
 export class SimpleQueue {
   public queue: Array<() => Promise<void>> = [];
@@ -60,71 +53,7 @@ export class SimpleQueue {
   }
 }
 
-// Batching system that works in both environments
-export class EventBatcher {
-  private batch: BatchedEvent[] = [];
-  private timer: any = null; // Use any to work with both browser and Node.js timers
-  private maxBatchSize: number;
-  private flushInterval: number;
-  private sendBatch: (events: BatchedEvent[]) => Promise<void>;
 
-  constructor(
-    maxBatchSize: number,
-    flushInterval: number,
-    sendBatch: (events: BatchedEvent[]) => Promise<void>
-  ) {
-    this.maxBatchSize = maxBatchSize;
-    this.flushInterval = flushInterval;
-    this.sendBatch = sendBatch;
-  }
-
-  add(event: BatchedEvent): void {
-    this.batch.push(event);
-
-    // Start timer if not already running
-    if (!this.timer) {
-      this.timer = setTimeout(() => {
-        this.flush();
-      }, this.flushInterval);
-    }
-
-    // Flush if batch is full
-    if (this.batch.length >= this.maxBatchSize) {
-      this.flush();
-    }
-  }
-
-  flush(): void {
-    if (this.batch.length === 0) return;
-
-    const eventsToSend = [...this.batch];
-    this.batch = [];
-    
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    // Fire and forget
-    this.sendBatch(eventsToSend).catch(() => {
-      // Silently handle errors in batched sends
-    });
-  }
-
-  async forceFlush(): Promise<void> {
-    if (this.batch.length === 0) return;
-
-    const eventsToSend = [...this.batch];
-    this.batch = [];
-    
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    await this.sendBatch(eventsToSend);
-  }
-}
 
 // Universal HTTP client using fetch
 export class UniversalHttpClient {
@@ -170,7 +99,6 @@ export const createBebopClient: BebopFactory = ({
   bearerToken,
   jwt,
   output = false,
-  batching = { enabled: false, maxBatchSize: 10, flushInterval: 1000 },
 }: BebopConfig = {}): BebopClient => {
   if (!baseUrl || !baseUrl.startsWith("https://"))
     throw new Error("Missing https URL.");
@@ -196,26 +124,7 @@ export const createBebopClient: BebopFactory = ({
     });
   };
 
-  const sendBatchEvents = async (events: BatchedEvent[]) => {
-    return queue.add(async () => {
-      await httpClient.post('/collect/batch', {
-        events: events.map(event => ({
-          $event: event.eventName,
-          $params: event.eventParams || {},
-          $trace: event.eventTrace || [],
-        }))
-      });
-      
-      if (output) console.log(`Batch sent: ${events.length} events`);
-    });
-  };
 
-  // Initialize batcher if batching is enabled
-  const batcher = batching.enabled ? new EventBatcher(
-    batching.maxBatchSize || 10,
-    batching.flushInterval || 1000,
-    sendBatchEvents
-  ) : null;
 
   return {
     send: async (...args: BebopSendArgs): Promise<void> => {
@@ -226,30 +135,13 @@ export const createBebopClient: BebopFactory = ({
     sendAsync: (...args: BebopSendArgs): void => {
       const [eventName, eventParams, eventTrace] = args;
       
-      if (batcher) {
-        // Use batching system
-        batcher.add({ eventName, eventParams, eventTrace });
-      } else {
-        // Fire and forget single event
-        sendSingleEvent(eventName, eventParams, eventTrace).catch((e) => {
-          if (output) console.error('Bebop sendAsync error:', e.message);
-        });
-      }
-    },
-    
-    batch: (events: Array<{ eventName: string; eventParams?: object; eventTrace?: object[] }>): void => {
-      // Send multiple events as a batch immediately
-      sendBatchEvents(events).catch((e) => {
-        if (output) console.error('Bebop batch error:', e.message);
+      // Fire and forget single event
+      sendSingleEvent(eventName, eventParams, eventTrace).catch((e) => {
+        if (output) console.error('Bebop sendAsync error:', e.message);
       });
     },
     
     flush: async (): Promise<void> => {
-      // Flush any pending batched events first
-      if (batcher) {
-        await batcher.forceFlush();
-      }
-      
       // Wait for all pending tasks to complete
       await queue.onIdle();
     },
