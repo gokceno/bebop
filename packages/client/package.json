@@ -1,16 +1,31 @@
 {
   "name": "@gokceno/bebop-client",
   "type": "module",
-  "version": "0.1.1",
+  "version": "2.0.0",
   "repository": "git+https://github.com/gokceno/bebop.git",
   "packageManager": "bun@1.2.13",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "main": "./dist/index.js",
+  "browser": "./dist/browser.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/browser.js",
+      "node": "./dist/index.js",
+      "default": "./dist/browser.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "EXAMPLES.md",
+    "MIGRATION.md"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node --format esm --sourcemap && tsc --emitDeclarationOnly --outDir dist"
+    "build": "bun build src/index.ts --outdir dist --target node --format esm --sourcemap && bun build src/browser.ts --outdir dist --target browser --format esm --sourcemap && tsc --emitDeclarationOnly --outDir dist"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -21,8 +36,9 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {
-    "got": "^14.4.7",
-    "p-queue": "^8.1.0"
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   }
 }

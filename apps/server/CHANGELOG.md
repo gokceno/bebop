@@ -1,5 +1,11 @@
 # bebop-server
 
+## 0.2.1
+
+### Patch Changes
+
+- Bebop Client written from ground up to suppoer browsers and servers at the same time.
+
 ## 0.2.0
 
 ### Minor Changes
