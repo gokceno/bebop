@@ -14,10 +14,12 @@ body:graphql {
   query {
     events(
       where: {
-        eventName: "postContent"
-        params: { postContent: { creatorId: "abc123" }}
+        eventName: "contentPost"
+        params: {
+          contentPost: { creatorRemoteId: "abc123" }
+        }
       }
-      limit: 1
+      limit: 100
       order: "desc"
     ) {
       id

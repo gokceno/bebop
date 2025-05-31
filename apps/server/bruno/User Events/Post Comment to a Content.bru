@@ -1,0 +1,25 @@
+meta {
+  name: Post Comment to a Content
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "contentCommentPost",
+    "$params": {
+      "contentId": "abc123"
+    },
+    "$trace": [
+      {
+        "commentBody": "..."
+      }
+    ]
+  }
+}

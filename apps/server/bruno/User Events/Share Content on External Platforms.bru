@@ -1,0 +1,21 @@
+meta {
+  name: Share Content on External Platforms
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "contentShare",
+    "$params": {
+      "contentId": "abc123"
+    },
+    "$trace": []
+  }
+}

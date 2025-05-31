@@ -12,9 +12,9 @@ post {
 
 body:json {
   {
-    "$event": "postContent",
+    "$event": "contentPost",
     "$params": {
-      "creatorId": "abc123"
+      "creatorRemoteId": "abc123"
     },
     "$trace": [
       {
@@ -24,7 +24,8 @@ body:json {
             "sourceType": "image", // video
             "sourceMediaRatio": "1:1", // 4:5
             "coverImageUrl": "...",
-            "order": 1
+            "order": 1,
+            "productUri": "..."
           }
         ],
         "contentBody": "...", // 2000 chars max.

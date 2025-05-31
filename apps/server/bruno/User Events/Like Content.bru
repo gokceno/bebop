@@ -1,0 +1,21 @@
+meta {
+  name: Like Content
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "contentLike",
+    "$params": {
+      "contentId": "abc123"
+    },
+    "$trace": []
+  }
+}

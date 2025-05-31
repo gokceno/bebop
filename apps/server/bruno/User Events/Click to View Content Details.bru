@@ -1,0 +1,21 @@
+meta {
+  name: Click to View Content Details
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "contentClick",
+    "$params": {
+      "contentId": "abc123"
+    },
+    "$trace": []
+  }
+}
