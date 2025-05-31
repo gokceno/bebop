@@ -6,11 +6,31 @@ auth:
     secret: bebop-analytics-super-secret-key
     max_age: 1d
 event_types:
-  - type: like
+  - type: "content:post"
+    params:
+      - creator_remote_id: string
+    trace: true
+  - type: "content:like"
     params:
       - content_id: string
     trace: false
-  - type: postContent
+  - type: "content:comment:post"
     params:
-      - creator_id: string
+      - content_id: string
+    trace: true
+  - type: "content:save"
+    params:
+      - content_id: string
+    trace: false
+  - type: "content:share"
+    params:
+      - content_id: string
+    trace: false
+  - type: "content:click"
+    params:
+      - content_id: string
+    trace: false
+  - type: "content:view"
+    params:
+      - content_id: string
     trace: true
