@@ -46,11 +46,12 @@ const configSchema = z.object({
   event_types: z.array(
     z.object({
       type: z.string(),
+      label: z.string().optional(),
       trace: z.boolean(),
       params: z.array(
         z.record(
           z.string(),
-          z.union([z.literal("numeric"), z.literal("string")])
+          z.union([z.literal("number"), z.literal("string")])
         )
       ),
     })

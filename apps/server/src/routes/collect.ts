@@ -42,7 +42,7 @@ export default async function collectRoute(fastify: FastifyInstance) {
       if (eventType.params) {
         eventType.params.forEach((param: any) => {
           Object.entries(param).forEach(([key, type]) => {
-            if (type === "numeric") {
+            if (type === "number") {
               paramsSchema[key] = z.number();
             } else if (type === "string") {
               paramsSchema[key] = z.string();
@@ -56,27 +56,41 @@ export default async function collectRoute(fastify: FastifyInstance) {
       return acc;
     }, {});
 
-    // Create a union of all possible param schemas
-    const paramsSchemaValues = Object.values(paramsSchemas);
-    const paramsUnion =
-      paramsSchemaValues.length > 0
-        ? z.union(paramsSchemaValues as any)
-        : z.object({});
-
-    const payloadSchema = z.object({
-      $event: eventUnion,
-      $params: paramsUnion,
-      $trace: z.array(z.unknown()),
-    });
-
     try {
       const body: CollectPayload | object = request.body || {};
-
-      const validatedPayload: any = payloadSchema.safeParse(body);
-      if (!validatedPayload.success) {
-        fastify.logger.error(validatedPayload.error);
-        throw new Error(`Invalid payload.`);
+      
+      // First validate the basic structure and event type
+      const basicPayloadSchema = z.object({
+        $event: eventUnion,
+        $params: z.object({}).passthrough(), // Allow any params for now
+        $trace: z.array(z.unknown()),
+      });
+      
+      const basicValidation = basicPayloadSchema.safeParse(body);
+      if (!basicValidation.success) {
+        fastify.logger.error(basicValidation.error);
+        throw new Error(`Invalid payload structure.`);
       }
+      
+      // Now validate params against the specific event type schema
+      const eventType = basicValidation.data.$event;
+      const eventParamsSchema = paramsSchemas[eventType] || z.object({});
+      
+      const paramsValidation = eventParamsSchema.safeParse(basicValidation.data.$params);
+      if (!paramsValidation.success) {
+        fastify.logger.error(paramsValidation.error);
+        throw new Error(`Invalid parameters for event type '${eventType}'.`);
+      }
+      
+      // Create the final validated payload
+      const validatedPayload = {
+        success: true,
+        data: {
+          $event: basicValidation.data.$event,
+          $params: paramsValidation.data,
+          $trace: basicValidation.data.$trace,
+        }
+      };
 
       fastify.logger.debug(`Event: ${validatedPayload.data.$event}`);
       fastify.logger.debug(
@@ -122,9 +136,9 @@ export default async function collectRoute(fastify: FastifyInstance) {
           validatedPayload.data.$trace.length > 0
         ) {
           await tx.insert(schema.eventsTraces).values(
-            validatedPayload.data.$trace.map((traceData: object) => ({
+            validatedPayload.data.$trace.map((traceData: unknown) => ({
               eventId: newEvent.id,
-              traceData,
+              traceData: traceData as object,
             }))
           );
         }

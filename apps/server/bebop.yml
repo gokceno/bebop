@@ -7,30 +7,37 @@ auth:
     max_age: 1d
 event_types:
   - type: "contentPost"
+    label: "Post new content"
     params:
       - creator_remote_id: string
     trace: true
   - type: "contentLike"
+    label: "Like content"
     params:
       - content_id: string
     trace: false
   - type: "contentCommentPost"
+    label: "Post new comment to content"
     params:
       - content_id: string
     trace: true
   - type: "contentSave"
+    label: "Save a content"
     params:
       - content_id: string
     trace: false
   - type: "contentShare"
+    label: "Share content externally"
     params:
       - content_id: string
     trace: false
   - type: "contentClick"
+    label: "Click on content"
     params:
       - content_id: string
     trace: false
   - type: "contentView"
+    label: "View a content"
     params:
       - content_id: string
     trace: true
