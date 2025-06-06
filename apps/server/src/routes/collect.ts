@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import type { CollectPayload } from "../types";
-import { db, schema } from "../utils/db";
+import type { CollectPayload, JWTPayload, ParamsInput } from "../types";
+import { DefaultCollectHandler } from "./handlers/default";
 
 export default async function collectRoute(fastify: FastifyInstance) {
   fastify.addHook(
@@ -25,8 +25,8 @@ export default async function collectRoute(fastify: FastifyInstance) {
   // POST /collect - Processes and stores collected data
   fastify.post("/collect", async (request, reply) => {
     // Get authentication method from the flag set by auth functions
-    const authMethod = (request as any).authMethod || "unknown";
-    const jwtPayload = (request as any).jwtPayload;
+    const authMethod: string = (request as any).authMethod || "unknown";
+    const jwtPayload: JWTPayload = (request as any).jwtPayload;
 
     // Dynamically build the schema from config
     const eventTypes = fastify.config.eventTypes || [];
@@ -58,100 +58,55 @@ export default async function collectRoute(fastify: FastifyInstance) {
 
     try {
       const body: CollectPayload | object = request.body || {};
-      
+
       // First validate the basic structure and event type
       const basicPayloadSchema = z.object({
         $event: eventUnion,
         $params: z.object({}).passthrough(), // Allow any params for now
         $trace: z.array(z.unknown()),
       });
-      
+
       const basicValidation = basicPayloadSchema.safeParse(body);
       if (!basicValidation.success) {
         fastify.logger.error(basicValidation.error);
         throw new Error(`Invalid payload structure.`);
       }
-      
+
       // Now validate params against the specific event type schema
       const eventType = basicValidation.data.$event;
       const eventParamsSchema = paramsSchemas[eventType] || z.object({});
-      
-      const paramsValidation = eventParamsSchema.safeParse(basicValidation.data.$params);
+
+      const paramsValidation = eventParamsSchema.safeParse(
+        basicValidation.data.$params
+      );
       if (!paramsValidation.success) {
         fastify.logger.error(paramsValidation.error);
         throw new Error(`Invalid parameters for event type '${eventType}'.`);
       }
-      
-      // Create the final validated payload
-      const validatedPayload = {
-        success: true,
-        data: {
-          $event: basicValidation.data.$event,
-          $params: paramsValidation.data,
-          $trace: basicValidation.data.$trace,
-        }
-      };
 
-      fastify.logger.debug(`Event: ${validatedPayload.data.$event}`);
-      fastify.logger.debug(
-        `Validated params: ${JSON.stringify(validatedPayload.data.$params)}`
-      );
-      fastify.logger.debug(
-        `Validated trace: ${JSON.stringify(validatedPayload.data.$trace)}`
-      );
+      const $event: string = basicValidation.data.$event;
+      const $params: ParamsInput = paramsValidation.data;
+      const $trace: object = basicValidation.data.$trace;
+
+      fastify.logger.debug(`Event: ${$event}`);
+      fastify.logger.debug(`Validated params: ${JSON.stringify($params)}`);
+      fastify.logger.debug(`Validated trace: ${JSON.stringify($trace)}`);
       if (jwtPayload)
         fastify.logger.debug(
           `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
         );
 
-      // Insert event data into the database
-      const eventData = await db.transaction(async (tx) => {
-        // Create the event record
-        const [newEvent] = await tx
-          .insert(schema.events)
-          .values({
-            eventName: validatedPayload.data.$event,
-            originator: jwtPayload || {},
-          })
-          .returning();
-
-        // Insert all parameters
-        if (validatedPayload.data.$params) {
-          const paramsEntries = Object.entries(validatedPayload.data.$params);
-          if (paramsEntries.length > 0) {
-            await tx.insert(schema.eventsParams).values(
-              paramsEntries.map(([paramName, paramValue]) => ({
-                eventId: newEvent.id,
-                paramName,
-                paramValue: paramValue?.toString() || "",
-              }))
-            );
-          }
-        }
-
-        // Insert trace data - each trace item as separate record
-        if (
-          validatedPayload.data.$trace &&
-          Array.isArray(validatedPayload.data.$trace) &&
-          validatedPayload.data.$trace.length > 0
-        ) {
-          await tx.insert(schema.eventsTraces).values(
-            validatedPayload.data.$trace.map((traceData: unknown) => ({
-              eventId: newEvent.id,
-              traceData: traceData as object,
-            }))
-          );
-        }
-
-        return newEvent;
-      });
+      const eventIds = await Promise.all(
+        [new DefaultCollectHandler()]
+          .filter((h) => h.target.includes($event) || h.target.includes("*"))
+          .map((h) => h.handle($event, $params, $trace, jwtPayload))
+      );
 
       return reply.status(201).send({
-        success: true,
-        eventId: eventData.id,
+        eventIds,
         received: {
-          $event: validatedPayload.data.$event,
-          $params: validatedPayload.data.$params,
+          $event,
+          $params,
         },
         auth: {
           method: authMethod,

@@ -47,3 +47,18 @@ export type GraphQLContext = {
 export type JWTPayload = {
   [key: string]: string;
 };
+
+export interface ICollectHandler {
+  handlerName: string;
+  target: string[];
+  handle: (
+    $event: string,
+    $params: ParamsInput,
+    $trace: object,
+    jwtPayload: JWTPayload
+  ) => Promise<object>;
+}
+
+export type ParamsInput = {
+  [key: string]: string | number;
+};

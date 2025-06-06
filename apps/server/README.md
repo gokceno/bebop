@@ -58,13 +58,13 @@ event_types:
       - email: string
       - source: string
     trace: true
-  
+
   - type: page_view
     params:
       - page_url: string
       - user_id: string
     trace: false
-  
+
   - type: purchase
     params:
       - amount: numeric
@@ -156,8 +156,11 @@ Collect analytics events.
 **Response:**
 ```json
 {
-  "success": true,
-  "eventId": "clw2x1y2z3000abc123def456",
+  "eventIds": [
+    {
+      "default": "clw2x1y2z3000abc123def456"
+    }
+  ],
   "received": {
     "$event": "user_signup",
     "$params": {

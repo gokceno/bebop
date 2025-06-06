@@ -1,7 +1,6 @@
 import Fastify from "fastify";
 import { yaml } from "./utils/config";
 import { logger } from "./utils/logger";
-import { db } from "./utils/db";
 import { setupAuth } from "./utils/auth";
 import collectRoute from "./routes/collect";
 import graphqlRoute from "./routes/graphql";
@@ -15,7 +14,6 @@ const fastify: FastifyInstance = Fastify();
 // Decorate fastify instance with logger and config
 fastify.decorate("logger", logger);
 fastify.decorate("config", config);
-fastify.decorate("db", db);
 
 // Setup JWT and bearer authentication
 setupAuth(fastify, config);
