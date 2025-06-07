@@ -8,7 +8,7 @@ export class DefaultCollectHandler implements ICollectHandler {
     event: string,
     params: ParamsInput,
     trace: object,
-    jwtPayload: JWTPayload
+    jwtPayload: JWTPayload | undefined
   ) => {
     const eventData = await db.transaction(async (tx) => {
       // Create the event record

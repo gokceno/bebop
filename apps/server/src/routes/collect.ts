@@ -23,10 +23,10 @@ export default async function collectRoute(fastify: FastifyInstance) {
   });
 
   // POST /collect - Processes and stores collected data
-  fastify.post("/collect", async (request, reply) => {
+  fastify.post("/collect", async (request: FastifyRequest, reply) => {
     // Get authentication method from the flag set by auth functions
-    const authMethod: string = (request as any).authMethod || "unknown";
-    const jwtPayload: JWTPayload = (request as any).jwtPayload;
+    const authMethod: string = request.authMethod || "unknown";
+    const jwtPayload: JWTPayload | undefined = request.jwtPayload;
 
     // Dynamically build the schema from config
     const eventTypes = fastify.config.eventTypes || [];

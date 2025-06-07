@@ -55,7 +55,7 @@ export interface ICollectHandler {
     $event: string,
     $params: ParamsInput,
     $trace: object,
-    jwtPayload: JWTPayload
+    jwtPayload: JWTPayload | undefined
   ) => Promise<object>;
 }
 
