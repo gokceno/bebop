@@ -1,7 +1,7 @@
 import { db, schema } from "../../utils/db";
 import type { ICollectHandler, JWTPayload, ParamsInput } from "../../types";
 
-export class DefaultCollectHandler implements ICollectHandler {
+export class Default implements ICollectHandler {
   public handlerName = "default";
   public target = ["*"];
   public handle = async (

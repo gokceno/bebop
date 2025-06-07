@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { CollectPayload, JWTPayload, ParamsInput } from "../types";
-import { DefaultCollectHandler } from "./handlers/default";
+import { Default as DefaultCollectHandler } from "./handlers/default";
 
 export default async function collectRoute(fastify: FastifyInstance) {
   fastify.addHook(
