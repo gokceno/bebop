@@ -1,6 +1,7 @@
 import { JSONResolver, JSONDefinition } from "graphql-scalars";
 import { DateTime } from "luxon";
 import { events } from "../schema";
+import { db } from "../utils/db";
 import { desc, asc, sql, SQL } from "drizzle-orm";
 import type { GraphQLEventQueryArgs, GraphQLContext, Config } from "../types";
 
@@ -169,7 +170,7 @@ export const resolvers = {
             : undefined;
 
         return (
-          (await context?.db?.query.events.findMany({
+          (await db?.query.events.findMany({
             limit,
             offset,
             with: {
