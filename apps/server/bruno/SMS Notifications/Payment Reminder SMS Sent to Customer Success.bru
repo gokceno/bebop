@@ -1,0 +1,22 @@
+meta {
+  name: Payment Reminder SMS Sent to Customer Success
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "paymentReminderSmsSentToCustomerSuccess",
+    "$params": {
+      "customerId": "customer_12345",
+      "bookingId": "booking_67890"
+    },
+    "$trace": []
+  }
+}

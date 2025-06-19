@@ -1,0 +1,22 @@
+meta {
+  name: Customer Contract Tracking Changed
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "customerContractTrackingChanged",
+    "$params": {
+      "contractId": "contract_12345",
+      "trackingStatus": "signed"
+    },
+    "$trace": []
+  }
+}

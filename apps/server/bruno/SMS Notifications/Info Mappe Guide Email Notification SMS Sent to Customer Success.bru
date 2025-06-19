@@ -1,0 +1,21 @@
+meta {
+  name: Info Mappe Guide Email Notification SMS Sent to Customer Success
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "infoMappeGuideEmailNotificationSmsSentToCustomerSuccess",
+    "$params": {
+      "customerId": "customer_12345"
+    },
+    "$trace": []
+  }
+}

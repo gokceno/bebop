@@ -1,0 +1,22 @@
+meta {
+  name: Booking Info Sent to Customer by SMS
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "bookingInfoSentToCustomerBySms",
+    "$params": {
+      "customerId": "customer_12345",
+      "bookingId": "booking_67890"
+    },
+    "$trace": []
+  }
+}

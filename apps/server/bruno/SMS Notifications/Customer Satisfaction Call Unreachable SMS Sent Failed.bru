@@ -1,0 +1,22 @@
+meta {
+  name: Customer Satisfaction Call Unreachable SMS Sent Failed
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "customerSatisfactionCallUnreachableSmsSentFailed",
+    "$params": {
+      "customerId": "customer_12345",
+      "errorReason": "SMS delivery failed"
+    },
+    "$trace": []
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Travel Document Email Notification SMS Sent to Customer Success
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "travelDocumentEmailNotificationSmsSentToCustomerSuccess",
+    "$params": {
+      "customerId": "customer_12345",
+      "documentId": "document_67890"
+    },
+    "$trace": []
+  }
+}

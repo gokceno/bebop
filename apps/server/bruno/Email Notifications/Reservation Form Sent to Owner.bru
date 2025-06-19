@@ -1,0 +1,22 @@
+meta {
+  name: Reservation Form Sent to Owner
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "reservationFormSentToOwner",
+    "$params": {
+      "formId": "form_12345",
+      "ownerId": "owner_67890"
+    },
+    "$trace": []
+  }
+}

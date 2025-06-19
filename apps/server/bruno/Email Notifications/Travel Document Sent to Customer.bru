@@ -1,0 +1,22 @@
+meta {
+  name: Travel Document Sent to Customer
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "travelDocumentSentToCustomer",
+    "$params": {
+      "documentId": "document_12345",
+      "customerId": "customer_67890"
+    },
+    "$trace": []
+  }
+}

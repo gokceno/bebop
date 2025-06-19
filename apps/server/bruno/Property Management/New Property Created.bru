@@ -1,0 +1,22 @@
+meta {
+  name: New Property Created
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "newPropertyCreated",
+    "$params": {
+      "propertyId": "property_12345",
+      "ownerId": "owner_67890"
+    },
+    "$trace": []
+  }
+}

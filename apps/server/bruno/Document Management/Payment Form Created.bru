@@ -1,0 +1,22 @@
+meta {
+  name: Payment Form Created
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "paymentFormCreated",
+    "$params": {
+      "formId": "form_12345",
+      "reservationId": "reservation_67890"
+    },
+    "$trace": []
+  }
+}

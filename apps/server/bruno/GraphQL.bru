@@ -14,12 +14,9 @@ body:graphql {
   query {
     events(
       where: {
-        eventName: "contentPost"
-        params: {
-          contentPost: { creatorRemoteId: "abc123" }
-        }
+        eventName: "userLoggedIn"
       }
-      limit: 100
+      limit: 2
       order: "desc"
     ) {
       id

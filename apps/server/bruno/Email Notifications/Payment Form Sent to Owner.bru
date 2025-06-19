@@ -1,7 +1,7 @@
 meta {
-  name: Share Content on External Platforms
+  name: Payment Form Sent to Owner
   type: http
-  seq: 4
+  seq: 3
 }
 
 post {
@@ -12,9 +12,10 @@ post {
 
 body:json {
   {
-    "$event": "contentShare",
+    "$event": "paymentFormSentToOwner",
     "$params": {
-      "contentId": "abc123"
+      "formId": "form_12345",
+      "ownerId": "owner_67890"
     },
     "$trace": []
   }

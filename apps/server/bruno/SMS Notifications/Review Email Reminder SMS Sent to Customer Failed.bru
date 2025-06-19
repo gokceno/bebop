@@ -1,0 +1,22 @@
+meta {
+  name: Review Email Reminder SMS Sent to Customer Failed
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "reviewEmailReminderSmsSentToCustomerFailed",
+    "$params": {
+      "customerId": "customer_12345",
+      "errorReason": "SMS delivery failed"
+    },
+    "$trace": []
+  }
+}

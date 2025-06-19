@@ -1,5 +1,5 @@
 meta {
-  name: Like Content
+  name: Reservation Created
   type: http
   seq: 1
 }
@@ -12,9 +12,10 @@ post {
 
 body:json {
   {
-    "$event": "contentLike",
+    "$event": "reservationCreated",
     "$params": {
-      "contentId": "abc123"
+      "reservationId": "reservation_12345",
+      "propertyId": "property_67890"
     },
     "$trace": []
   }

@@ -1,0 +1,22 @@
+meta {
+  name: Closure Removed
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "closureRemoved",
+    "$params": {
+      "propertyId": "property_12345",
+      "dateRange": "2024-07-15 to 2024-07-22"
+    },
+    "$trace": []
+  }
+}

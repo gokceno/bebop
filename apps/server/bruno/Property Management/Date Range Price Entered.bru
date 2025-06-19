@@ -1,0 +1,23 @@
+meta {
+  name: Date Range Price Entered
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "dateRangePriceEntered",
+    "$params": {
+      "propertyId": "property_12345",
+      "dateRange": "2024-07-15 to 2024-07-22",
+      "price": 2000
+    },
+    "$trace": []
+  }
+}

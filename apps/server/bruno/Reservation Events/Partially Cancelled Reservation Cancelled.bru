@@ -1,0 +1,21 @@
+meta {
+  name: Partially Cancelled Reservation Cancelled
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "partiallyCancelledReservationCancelled",
+    "$params": {
+      "reservationId": "reservation_12345"
+    },
+    "$trace": []
+  }
+}

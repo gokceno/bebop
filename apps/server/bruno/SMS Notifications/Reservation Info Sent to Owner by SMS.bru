@@ -1,0 +1,22 @@
+meta {
+  name: Reservation Info Sent to Owner by SMS
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "reservationInfoSentToOwnerBySms",
+    "$params": {
+      "ownerId": "owner_12345",
+      "reservationId": "reservation_67890"
+    },
+    "$trace": []
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Booking Removed
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "bookingRemoved",
+    "$params": {
+      "bookingId": "booking_12345"
+    },
+    "$trace": []
+  }
+}

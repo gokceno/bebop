@@ -96,11 +96,20 @@ export default async function collectRoute(fastify: FastifyInstance) {
           `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
         );
 
-      const eventIds = await Promise.all(
-        [new DefaultCollectHandler()]
-          .filter((h) => h.target.includes($event) || h.target.includes("*"))
-          .map((h) => h.handle($event, $params, $trace, jwtPayload))
+      const handlers = [new DefaultCollectHandler()].filter(
+        (h) => h.target.includes($event) || h.target.includes("*")
       );
+
+      const eventIds = [];
+      for (const handler of handlers) {
+        const eventId = await handler.handle(
+          $event,
+          $params,
+          $trace,
+          jwtPayload
+        );
+        eventIds.push(eventId);
+      }
 
       return reply.status(201).send({
         eventIds,

@@ -1,0 +1,23 @@
+meta {
+  name: Payment Reminder SMS Sent to Customer Failed
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "paymentReminderSmsSentToCustomerFailed",
+    "$params": {
+      "customerId": "customer_12345",
+      "bookingId": "booking_67890",
+      "errorReason": "SMS delivery failed"
+    },
+    "$trace": []
+  }
+}

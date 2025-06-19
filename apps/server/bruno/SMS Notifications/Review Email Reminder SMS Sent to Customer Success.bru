@@ -1,0 +1,21 @@
+meta {
+  name: Review Email Reminder SMS Sent to Customer Success
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "reviewEmailReminderSmsSentToCustomerSuccess",
+    "$params": {
+      "customerId": "customer_12345"
+    },
+    "$trace": []
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Property Opened for Online Sales
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "propertyOpenedForOnlineSales",
+    "$params": {
+      "propertyId": "property_12345"
+    },
+    "$trace": []
+  }
+}

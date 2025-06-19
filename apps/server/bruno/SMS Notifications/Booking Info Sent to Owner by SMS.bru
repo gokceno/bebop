@@ -1,5 +1,5 @@
 meta {
-  name: Save a Content
+  name: Booking Info Sent to Owner by SMS
   type: http
   seq: 3
 }
@@ -12,9 +12,10 @@ post {
 
 body:json {
   {
-    "$event": "contentSave",
+    "$event": "bookingInfoSentToOwnerBySms",
     "$params": {
-      "contentId": "abc123"
+      "ownerId": "owner_12345",
+      "bookingId": "booking_67890"
     },
     "$trace": []
   }

@@ -1,7 +1,7 @@
 meta {
-  name: Click to View Content Details
+  name: Booking Created
   type: http
-  seq: 5
+  seq: 1
 }
 
 post {
@@ -12,9 +12,10 @@ post {
 
 body:json {
   {
-    "$event": "contentClick",
+    "$event": "bookingCreated",
     "$params": {
-      "contentId": "abc123"
+      "bookingId": "booking_12345",
+      "propertyId": "property_67890"
     },
     "$trace": []
   }

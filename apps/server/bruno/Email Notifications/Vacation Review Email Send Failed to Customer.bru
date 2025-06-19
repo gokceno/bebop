@@ -1,0 +1,23 @@
+meta {
+  name: Vacation Review Email Send Failed to Customer
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "vacationReviewEmailSendFailedToCustomer",
+    "$params": {
+      "customerId": "customer_12345",
+      "reservationId": "reservation_67890",
+      "errorReason": "Email delivery failed"
+    },
+    "$trace": []
+  }
+}

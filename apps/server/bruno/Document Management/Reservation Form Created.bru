@@ -1,0 +1,22 @@
+meta {
+  name: Reservation Form Created
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "reservationFormCreated",
+    "$params": {
+      "formId": "form_12345",
+      "propertyId": "property_67890"
+    },
+    "$trace": []
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Property Closed for Online Sales
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "propertyClosedForOnlineSales",
+    "$params": {
+      "propertyId": "property_12345"
+    },
+    "$trace": []
+  }
+}

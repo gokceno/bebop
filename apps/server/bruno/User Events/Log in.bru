@@ -1,0 +1,21 @@
+meta {
+  name: Log in
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "userLoggedIn",
+    "$params": {
+      "userId": "abc123"
+    },
+    "$trace": []
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Invoice Create Failed
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "invoiceCreateFailed",
+    "$params": {
+      "reservationId": "reservation_67890",
+      "errorReason": "Invoice service unavailable"
+    },
+    "$trace": []
+  }
+}

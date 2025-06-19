@@ -1,0 +1,22 @@
+meta {
+  name: Travel Document Created
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "travelDocumentCreated",
+    "$params": {
+      "documentId": "document_12345",
+      "reservationId": "reservation_67890"
+    },
+    "$trace": []
+  }
+}

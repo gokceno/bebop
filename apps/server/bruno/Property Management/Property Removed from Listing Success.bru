@@ -1,0 +1,21 @@
+meta {
+  name: Property Removed from Listing Success
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "propertyRemovedFromListingSuccess",
+    "$params": {
+      "propertyId": "property_12345"
+    },
+    "$trace": []
+  }
+}

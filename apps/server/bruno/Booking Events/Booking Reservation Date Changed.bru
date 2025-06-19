@@ -1,0 +1,23 @@
+meta {
+  name: Booking Reservation Date Changed
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "bookingReservationDateChanged",
+    "$params": {
+      "bookingId": "booking_12345",
+      "oldDates": "2024-07-15 to 2024-07-22",
+      "newDates": "2024-07-20 to 2024-07-27"
+    },
+    "$trace": []
+  }
+}

@@ -1,0 +1,23 @@
+meta {
+  name: Monthly Price Entered
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "monthlyPriceEntered",
+    "$params": {
+      "propertyId": "property_12345",
+      "month": "2024-07",
+      "price": 1500
+    },
+    "$trace": []
+  }
+}
