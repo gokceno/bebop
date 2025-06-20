@@ -12,24 +12,21 @@ post {
 
 body:graphql {
   query {
-    events(
-      where: {
-        eventName: "userLoggedIn"
+    events(where: { eventName: "userLoggedIn" }, limit: 2, order: "desc") {
+      events {
+        id
+        eventName
+        createdAt
+        originator
+        params {
+          paramName
+          paramValue
+        }
+        traces {
+          traceData
+        }
       }
-      limit: 2
-      order: "desc"
-    ) {
-      id
-      eventName
-      createdAt
-      originator
-      params {
-        paramName
-        paramValue
-      }
-      traces {
-        traceData
-      }
+      total
     }
   }
   
