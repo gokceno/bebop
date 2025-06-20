@@ -1,5 +1,15 @@
 # bebop-server
 
+## 0.2.2
+
+### Patch Changes
+
+- d278c21: GraphQL queries return "total" for pagination.
+- 950bf6e: Implement JWT verify or decode in the config file (feature itself is not implemented yet).
+- 4d32c47: Parameter types validated against event types.
+- 220097f: Moved collect handler to a separate file, added support for multiple handlers.
+- 0e63539: Added support for CORS
+
 ## 0.2.1
 
 ### Patch Changes
