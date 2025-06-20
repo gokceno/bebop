@@ -2,7 +2,7 @@ import { JSONResolver, JSONDefinition } from "graphql-scalars";
 import { DateTime } from "luxon";
 import { events } from "../schema";
 import { db } from "../utils/db";
-import { desc, asc, sql, SQL } from "drizzle-orm";
+import { desc, asc, sql, SQL, count } from "drizzle-orm";
 import type { GraphQLEventQueryArgs, GraphQLContext, Config } from "../types";
 
 // Function to generate dynamic parameter input types based on config
@@ -52,6 +52,11 @@ export const createTypeDefs = (config: Config) => `
     params: EventParamsInput
   }
 
+  type EventsResponse {
+    events: [Event]
+    total: Int
+  }
+
   type Query {
     me: String
     events(
@@ -59,7 +64,7 @@ export const createTypeDefs = (config: Config) => `
       offset: Int = 0,
       order: String = "desc",
       where: EventWhereInput
-    ): [Event]
+    ): EventsResponse
   }
 
   type Event {
@@ -169,7 +174,16 @@ export const resolvers = {
               )
             : undefined;
 
-        return (
+        // Get total count with same where conditions but without limit/offset
+        const totalCountResult = await db
+          ?.select({ count: count() })
+          .from(events)
+          .where(whereClause);
+
+        const totalCount = totalCountResult?.[0]?.count || 0;
+
+        // Get paginated results
+        const eventResults =
           (await db?.query.events.findMany({
             limit,
             offset,
@@ -179,8 +193,12 @@ export const resolvers = {
             },
             where: whereClause,
             orderBy: () => [orderFunc(events.createdAt)],
-          })) || []
-        );
+          })) || [];
+
+        return {
+          events: eventResults,
+          total: totalCount,
+        };
       } catch (error) {
         context.logger?.error("Error fetching events:", error);
         throw new Error("Failed to fetch events");
