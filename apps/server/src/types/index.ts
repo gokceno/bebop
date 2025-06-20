@@ -8,6 +8,7 @@ export type Config = {
     jwt: {
       secret: string;
       maxAge: string;
+      mode: "decode" | "verify";
     };
     cors?: {
       allowedOrigins: string[];

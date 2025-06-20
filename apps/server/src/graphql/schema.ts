@@ -94,7 +94,7 @@ export const createTypeDefs = (config: Config) => `
 
 // Default typeDefs for backward compatibility
 export const typeDefs = createTypeDefs({
-  auth: { bearerTokens: [], jwt: { secret: "", maxAge: "" } },
+  auth: { bearerTokens: [], jwt: { mode: "verify", secret: "", maxAge: "" } },
   eventTypes: [],
 });
 

@@ -1,6 +1,6 @@
 import fastifyJwt from "@fastify/jwt";
 import fastifyAuth from "@fastify/auth";
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { Config } from "../types";
 
 export function setupAuth(fastify: FastifyInstance, config: Config): void {
@@ -13,9 +13,9 @@ export function setupAuth(fastify: FastifyInstance, config: Config): void {
   fastify.register(fastifyAuth);
   fastify.decorate("verifyJWT", async (request: FastifyRequest) => {
     try {
+      // TODO: Implement jwtVerify per config file.
       const jwtPayload = await request.jwtDecode();
 
-      // Set auth method flag on request
       (request as any).authMethod = "jwt";
       (request as any).jwtPayload = jwtPayload;
     } catch (err) {
