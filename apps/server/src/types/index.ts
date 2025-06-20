@@ -9,6 +9,9 @@ export type Config = {
       secret: string;
       maxAge: string;
     };
+    cors?: {
+      allowedOrigins: string[];
+    };
   };
   eventTypes: {
     type: string;

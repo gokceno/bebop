@@ -12,6 +12,7 @@ A lightweight, high-performance analytics server built with Fastify, TypeScript,
 - 🐳 **Docker Ready**: Production-ready containerization
 - 📝 **TypeScript**: Full type safety throughout the codebase
 - 🔍 **Event Tracing**: Built-in support for event trace data
+- 🌐 **CORS Support**: Environment-aware Cross-Origin Resource Sharing
 - ⚡ **Runtime**: Powered by Bun for exceptional performance
 
 ## Quick Start
@@ -52,6 +53,13 @@ auth:
     secret: your-super-secret-jwt-key
     max_age: 1d
 
+cors:
+  allowed_origins:
+    - https://yourdomain.com
+    - https://app.yourdomain.com
+    - http://localhost:3000
+    - http://localhost:5173
+
 event_types:
   - type: user_signup
     params:
@@ -79,6 +87,12 @@ event_types:
 - `bearer_tokens`: Array of valid API keys for bearer token authentication
 - `jwt.secret`: Secret key for JWT token signing and verification
 - `jwt.max_age`: JWT token expiration time (e.g., "1d", "24h", "3600s")
+
+**CORS Configuration**
+- `cors.allowed_origins`: Array of allowed origins for cross-origin requests
+  - In development, all origins are automatically allowed
+  - In production, only specified origins are permitted
+  - Common local development ports are included by default
 
 **Event Types**
 - `type`: Event name (must be unique)
@@ -365,6 +379,7 @@ HOST=0.0.0.0
 3. **HTTPS**: Always use HTTPS in production
 4. **Database**: Ensure SQLite file has proper permissions
 5. **Logs**: Configure appropriate log levels for production
+6. **CORS**: Configure `allowed_origins` to restrict cross-origin access to trusted domains only
 
 ### Performance Tuning
 
@@ -392,6 +407,29 @@ client.sendAsync('user_signup', {
   source: 'homepage'
 });
 ```
+
+### Browser Integration
+
+The server includes CORS support for browser-based applications:
+
+```javascript
+// Frontend application (React, Vue, etc.)
+import { Bebop } from '@gokceno/bebop-client';
+
+const client = Bebop({
+  baseUrl: 'https://api.yourdomain.com', // Must be in allowed_origins
+  bearerToken: 'your-api-key',
+  concurrency: 3
+});
+
+// Works from browser without CORS issues
+await client.send('page_view', {
+  page_url: window.location.pathname,
+  user_id: 'user123'
+});
+```
+
+**Note**: Make sure your domain is included in the `cors.allowed_origins` configuration for production deployments.
 
 ## API Testing
 

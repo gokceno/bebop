@@ -15,6 +15,38 @@ const fastify: FastifyInstance = Fastify();
 fastify.decorate("logger", logger);
 fastify.decorate("config", config);
 
+// Register CORS plugin with environment-based configuration
+fastify.register(import("@fastify/cors"), {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // In development, allow all origins
+    if (process.env.NODE_ENV === "development") {
+      return callback(null, true);
+    }
+
+    // In production, check against allowed origins from config
+    const allowedOrigins = config.auth.cors?.allowedOrigins || [
+      "http://localhost",
+      "http://localhost:3000",
+      "http://localhost:8000",
+      "http://localhost:8080",
+      "http://localhost:5173",
+      "http://localhost:4173",
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"), false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+});
+
 // Setup JWT and bearer authentication
 setupAuth(fastify, config);
 

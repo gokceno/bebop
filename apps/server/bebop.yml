@@ -5,6 +5,9 @@ auth:
   jwt:
     secret: bebop-analytics-super-secret-key
     max_age: 1d
+  cors:
+    allowed_origins:
+      - https://bebop.staging.brewww.net
 event_types:
   - type: "userLoggedIn"
     label: "Sisteme giriş yapıldı."

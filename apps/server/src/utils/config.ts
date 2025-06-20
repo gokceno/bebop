@@ -42,6 +42,9 @@ const configSchema = z.object({
       secret: z.string(),
       max_age: z.string(),
     }),
+    cors: z.object({
+      allowed_origins: z.array(z.string().url()),
+    }),
   }),
   event_types: z.array(
     z.object({
