@@ -100,7 +100,7 @@ export default async function collectRoute(fastify: FastifyInstance) {
         (h) => h.target.includes($event) || h.target.includes("*")
       );
 
-      const eventIds = [];
+      const eventIds: object[] = [];
       for (const handler of handlers) {
         const eventId = await handler.handle(
           $event,
@@ -108,7 +108,7 @@ export default async function collectRoute(fastify: FastifyInstance) {
           $trace,
           jwtPayload
         );
-        eventIds.push(eventId);
+        if (eventId !== null) eventIds.push(eventId);
       }
 
       return reply.status(201).send({

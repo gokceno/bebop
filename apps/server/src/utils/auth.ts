@@ -11,34 +11,40 @@ export function setupAuth(fastify: FastifyInstance, config: Config): void {
     },
   });
   fastify.register(fastifyAuth);
-  fastify.decorate("verifyJWT", async (request: FastifyRequest) => {
-    try {
-      // TODO: Implement jwtVerify per config file.
-      const jwtPayload = await request.jwtDecode();
+  fastify.decorate(
+    "verifyJWT",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        // TODO: Implement jwtVerify per config file.
+        const jwtPayload = await request.jwtDecode();
 
-      (request as any).authMethod = "jwt";
-      (request as any).jwtPayload = jwtPayload;
-    } catch (err) {
-      throw new Error("JWT authentication failed");
-    }
-  });
-
-  fastify.decorate("verifyBearer", async (request: FastifyRequest) => {
-    try {
-      const authorization = request.headers.authorization;
-      if (!authorization || !authorization.startsWith("Bearer ")) {
-        throw new Error("Missing or invalid bearer token");
+        (request as any).authMethod = "jwt";
+        (request as any).jwtPayload = jwtPayload;
+      } catch (err) {
+        throw new Error("JWT authentication failed");
       }
-
-      const token = authorization.slice(7); // Remove 'Bearer ' prefix
-      if (!config.auth.bearerTokens.includes(token)) {
-        throw new Error("Invalid bearer token");
-      }
-      // Set auth method flag on request
-      (request as any).authMethod = "bearer";
-      (request as any).bearerToken = token;
-    } catch (err) {
-      throw new Error("Bearer token authentication failed");
     }
-  });
+  );
+
+  fastify.decorate(
+    "verifyBearer",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const authorization = request.headers.authorization;
+        if (!authorization || !authorization.startsWith("Bearer ")) {
+          throw new Error("Missing or invalid bearer token");
+        }
+
+        const token = authorization.slice(7); // Remove 'Bearer ' prefix
+        if (!config.auth.bearerTokens.includes(token)) {
+          throw new Error("Invalid bearer token");
+        }
+        // Set auth method flag on request
+        (request as any).authMethod = "bearer";
+        (request as any).bearerToken = token;
+      } catch (err) {
+        throw new Error("Bearer token authentication failed");
+      }
+    }
+  );
 }
