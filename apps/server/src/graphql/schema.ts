@@ -3,7 +3,12 @@ import { DateTime } from "luxon";
 import { events } from "../schema";
 import { db } from "../utils/db";
 import { desc, asc, sql, SQL, count } from "drizzle-orm";
-import type { GraphQLEventQueryArgs, GraphQLContext, Config } from "../types";
+import type {
+  GraphQLEventQueryArgs,
+  GraphQLContext,
+  Config,
+  SQLCondition,
+} from "../types";
 
 // Function to generate dynamic parameter input types based on config
 const generateParamInputTypes = (config: Config): string => {
@@ -122,7 +127,7 @@ export const resolvers = {
 
       try {
         const orderFunc = order === "asc" ? asc : desc;
-        const conditions = [];
+        const conditions: SQLCondition[] = [];
 
         if (where?.email) {
           conditions.push(sql`${events.originator}->>'Email' = ${where.email}`);
@@ -133,11 +138,11 @@ export const resolvers = {
 
         // Handle dynamic parameter filtering
         if (where?.params && context?.config) {
-          const paramConditions: SQL[] = [];
+          const paramConditions: SQLCondition[] = [];
 
           // Iterate through each event type in params
           Object.keys(where.params).forEach((eventType) => {
-            const eventParams = (where.params as any)[eventType];
+            const eventParams = where.params![eventType];
             if (eventParams && Object.keys(eventParams).length > 0) {
               // For each parameter in this event type
               Object.keys(eventParams).forEach((paramName) => {
@@ -167,7 +172,7 @@ export const resolvers = {
           }
         }
 
-        const whereClause =
+        const whereClause: SQLCondition | undefined =
           conditions.length > 0
             ? conditions.reduce((acc, condition, index) =>
                 index === 0 ? condition : sql`${acc} AND ${condition}`

@@ -27,19 +27,6 @@ export type CollectPayload = {
   $trace: object[];
 };
 
-export type GraphQLEventQueryArgs = {
-  limit?: number;
-  offset?: number;
-  order?: "asc" | "desc";
-  where?: {
-    email?: string;
-    eventName?: string;
-    params?: {
-      [key: string]: string;
-    };
-  };
-};
-
 export type GraphQLContext = {
   jwtPayload?: JWTPayload;
   authMethod?: string;
@@ -66,3 +53,6 @@ export interface ICollectHandler {
 export type ParamsInput = {
   [key: string]: string | number;
 };
+
+// Re-export GraphQL types
+export * from "./graphql";
