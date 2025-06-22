@@ -1,5 +1,11 @@
 # bebop-server
 
+## 0.3.0
+
+### Minor Changes
+
+- Ability to query events data with operators like eq, neq, gte and lte, via the GraphQL endpoint.
+
 ## 0.2.2
 
 ### Patch Changes
