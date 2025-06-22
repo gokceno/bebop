@@ -4,7 +4,7 @@ import { createTypeDefs, resolvers } from "../graphql/schema";
 
 export default async function graphqlRoute(fastify: FastifyInstance) {
   const typeDefs = createTypeDefs(fastify.config);
-  
+
   const schema = createSchema({
     typeDefs,
     resolvers,
@@ -28,7 +28,7 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
     },
     graphiql: true,
     cors: {
-      origin: "*",
+      origin: fastify.config.auth.cors?.allowedOrigins,
       credentials: true,
     },
   });
