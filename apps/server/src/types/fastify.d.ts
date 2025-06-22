@@ -1,4 +1,3 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { Config, JWTPayload } from ".";
 import type { Logger } from "winston";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
