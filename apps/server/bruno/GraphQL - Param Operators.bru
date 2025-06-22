@@ -1,0 +1,43 @@
+meta {
+  name: GraphQL - Param Operators
+  type: graphql
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query {
+    events(
+      where: {
+        eventName: { eq: "monthlyPriceEntered" },
+        params: {
+          monthlyPriceEntered: {
+            propertyId: { eq: "12345" }
+          }
+        }
+      },
+      limit: 10,
+      order: "desc"
+    ) {
+      events {
+        id
+        eventName
+        createdAt
+        originator
+        params {
+          paramName
+          paramValue
+        }
+        traces {
+          traceData
+        }
+      }
+      total
+    }
+  }
+}

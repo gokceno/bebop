@@ -1,0 +1,48 @@
+meta {
+  name: GraphQL - Comprehensive Param Test
+  type: graphql
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query {
+    events(
+      where: {
+        eventName: { eq: "monthlyPriceEntered" },
+        email: { neq: "test@example.com" },
+        createdAt: { gte: 1640995200, lte: 1672531200 },
+        params: {
+          monthlyPriceEntered: {
+            propertyId: { neq: "cancelled-123" }
+          },
+          userLoggedIn: {
+            userId: { neq: "bot-session" }
+          }
+        }
+      },
+      limit: 20,
+      order: "desc"
+    ) {
+      events {
+        id
+        eventName
+        createdAt
+        originator
+        params {
+          paramName
+          paramValue
+        }
+        traces {
+          traceData
+        }
+      }
+      total
+    }
+  }
+}

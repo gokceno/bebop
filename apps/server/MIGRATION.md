@@ -14,7 +14,13 @@ query {
   events(where: {
     eventName: "userLoggedIn",
     email: "user@example.com", 
-    createdAt: 1640995200
+    createdAt: 1640995200,
+    params: {
+      userLoggedIn: {
+        sessionId: "session-123",
+        deviceType: "mobile"
+      }
+    }
   }) {
     events { id eventName createdAt }
     total
@@ -28,7 +34,13 @@ query {
   events(where: {
     eventName: { eq: "userLoggedIn" },
     email: { eq: "user@example.com" },
-    createdAt: { eq: 1640995200 }
+    createdAt: { eq: 1640995200 },
+    params: {
+      userLoggedIn: {
+        sessionId: { eq: "session-123" },
+        deviceType: { eq: "mobile" }
+      }
+    }
   }) {
     events { id eventName createdAt }
     total
@@ -52,7 +64,9 @@ where: { email: { eq: "user@example.com" } }
 where: { eventName: { eq: "userLoggedIn" } }
 ```
 
-### 2. Number Fields (createdAt)
+
+
+### 3. Number Fields (createdAt)
 
 **Old:**
 ```graphql
@@ -64,7 +78,33 @@ where: { createdAt: 1640995200 }
 where: { createdAt: { eq: 1640995200 } }
 ```
 
-### 3. Multiple Conditions
+### 4. Parameter Fields
+
+**Old:**
+```graphql
+where: {
+  params: {
+    orderPlaced: {
+      orderId: "12345",
+      amount: 100
+    }
+  }
+}
+```
+
+**New:**
+```graphql
+where: {
+  params: {
+    orderPlaced: {
+      orderId: { eq: "12345" },
+      amount: { eq: 100 }
+    }
+  }
+}
+```
+
+### 5. Multiple Conditions
 
 **Old:**
 ```graphql
@@ -105,12 +145,31 @@ where: {
 }
 ```
 
+### Parameter Range Queries
+```graphql
+# Parameters with numeric ranges
+where: {
+  params: {
+    orderPlaced: {
+      amount: { gte: 100, lte: 500 },
+      discount: { neq: 0 }
+    }
+  }
+}
+```
+
 ### Complex Combinations
 ```graphql
 where: {
   eventName: { eq: "orderPlaced" },
   email: { neq: "test@example.com" },
-  createdAt: { gte: 1640995200 }
+  createdAt: { gte: 1640995200 },
+  params: {
+    orderPlaced: {
+      orderId: { neq: "cancelled" },
+      amount: { gte: 50 }
+    }
+  }
 }
 ```
 
@@ -134,15 +193,45 @@ where: {
 + where: { createdAt: { eq: 1640995200 } }
 ```
 
-### 4. Combined Filters
+### 4. Parameter Filters
+```diff
+- where: {
+-   params: {
+-     orderPlaced: {
+-       amount: 100,
+-       currency: "USD"
+-     }
+-   }
+- }
++ where: {
++   params: {
++     orderPlaced: {
++       amount: { eq: 100 },
++       currency: { eq: "USD" }
++     }
++   }
++ }
+```
+
+### 5. Combined Filters
 ```diff
 - where: {
 -   eventName: "userLoggedIn",
--   email: "user@example.com"
+-   email: "user@example.com",
+-   params: {
+-     userLoggedIn: {
+-       sessionId: "session-123"
+-     }
+-   }
 - }
 + where: {
 +   eventName: { eq: "userLoggedIn" },
-+   email: { eq: "user@example.com" }
++   email: { eq: "user@example.com" },
++   params: {
++     userLoggedIn: {
++       sessionId: { eq: "session-123" }
++     }
++   }
 + }
 ```
 
@@ -153,6 +242,17 @@ where: {
 - `neq`: Not equals
 
 ### Number Fields (createdAt)
+- `eq`: Equals
+- `neq`: Not equals
+- `gte`: Greater than or equal to
+- `lte`: Less than or equal to
+
+### Parameter Fields
+**String Parameters:**
+- `eq`: Equals
+- `neq`: Not equals
+
+**Numeric Parameters:**
 - `eq`: Equals
 - `neq`: Not equals
 - `gte`: Greater than or equal to
@@ -194,6 +294,23 @@ query {
 }
 ```
 
+### Parameter Test
+```graphql
+query {
+  events(where: { 
+    params: {
+      orderPlaced: {
+        amount: { gte: 100 },
+        currency: { eq: "USD" }
+      }
+    }
+  }, limit: 1) {
+    events { id params { paramName paramValue } }
+    total
+  }
+}
+```
+
 ## Automated Migration Script
 
 If you have many queries to migrate, you can use this regex pattern to help:
@@ -229,7 +346,7 @@ If you encounter issues during migration:
 
 ## What Wasn't Changed
 
-- The `params` filtering continues to work exactly as before
 - Query structure, pagination, and ordering remain the same
 - Response format is unchanged
 - All other GraphQL functionality is unaffected
+- Parameter types (string vs numeric) are still determined by your event configuration

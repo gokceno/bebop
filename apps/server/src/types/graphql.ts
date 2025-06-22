@@ -28,7 +28,7 @@ export type EventWhereInput = {
 
 export type EventParamsInput = {
   [eventType: string]: {
-    [paramName: string]: string | number;
+    [paramName: string]: StringCondition | NumberCondition;
   };
 };
 

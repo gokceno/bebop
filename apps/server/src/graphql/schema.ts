@@ -18,8 +18,9 @@ const generateParamInputTypes = (config: Config): string => {
         .map((paramObj) => {
           const paramName = Object.keys(paramObj)[0];
           const paramType = paramObj[paramName];
-          const graphqlType = paramType === "numeric" ? "Float" : "String";
-          return `${paramName}: ${graphqlType}`;
+          const conditionType =
+            paramType === "numeric" ? "NumberCondition" : "StringCondition";
+          return `${paramName}: ${conditionType}`;
         })
         .join("\n");
 
@@ -191,18 +192,70 @@ export const resolvers = {
             if (eventParams && Object.keys(eventParams).length > 0) {
               // For each parameter in this event type
               Object.keys(eventParams).forEach((paramName) => {
-                const paramValue = eventParams[paramName];
-                if (paramValue !== undefined && paramValue !== null) {
-                  // Create a condition that checks both the event name and parameter
-                  paramConditions.push(
-                    sql`EXISTS (
-                      SELECT 1 FROM events_params ep
-                      WHERE ep.event_id = ${events.id}
-                      AND ep.param_name = ${paramName}
-                      AND ep.param_value = ${paramValue.toString()}
-                      AND ${events.eventName} = ${eventType}
-                    )`
-                  );
+                const paramCondition = eventParams[paramName];
+                if (paramCondition && typeof paramCondition === "object") {
+                  // Handle eq condition
+                  if (
+                    paramCondition.eq !== undefined &&
+                    paramCondition.eq !== null
+                  ) {
+                    paramConditions.push(
+                      sql`EXISTS (
+                        SELECT 1 FROM events_params ep
+                        WHERE ep.event_id = ${events.id}
+                        AND ep.param_name = ${paramName}
+                        AND ep.param_value = ${paramCondition.eq.toString()}
+                        AND ${events.eventName} = ${eventType}
+                      )`
+                    );
+                  }
+                  // Handle neq condition
+                  if (
+                    paramCondition.neq !== undefined &&
+                    paramCondition.neq !== null
+                  ) {
+                    paramConditions.push(
+                      sql`NOT EXISTS (
+                        SELECT 1 FROM events_params ep
+                        WHERE ep.event_id = ${events.id}
+                        AND ep.param_name = ${paramName}
+                        AND ep.param_value = ${paramCondition.neq.toString()}
+                        AND ${events.eventName} = ${eventType}
+                      )`
+                    );
+                  }
+                  // Handle gte condition (for numeric params)
+                  if (
+                    "gte" in paramCondition &&
+                    paramCondition.gte !== undefined &&
+                    paramCondition.gte !== null
+                  ) {
+                    paramConditions.push(
+                      sql`EXISTS (
+                        SELECT 1 FROM events_params ep
+                        WHERE ep.event_id = ${events.id}
+                        AND ep.param_name = ${paramName}
+                        AND CAST(ep.param_value AS REAL) >= ${paramCondition.gte}
+                        AND ${events.eventName} = ${eventType}
+                      )`
+                    );
+                  }
+                  // Handle lte condition (for numeric params)
+                  if (
+                    "lte" in paramCondition &&
+                    paramCondition.lte !== undefined &&
+                    paramCondition.lte !== null
+                  ) {
+                    paramConditions.push(
+                      sql`EXISTS (
+                        SELECT 1 FROM events_params ep
+                        WHERE ep.event_id = ${events.id}
+                        AND ep.param_name = ${paramName}
+                        AND CAST(ep.param_value AS REAL) <= ${paramCondition.lte}
+                        AND ${events.eventName} = ${eventType}
+                      )`
+                    );
+                  }
                 }
               });
             }
