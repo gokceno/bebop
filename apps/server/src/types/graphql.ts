@@ -7,9 +7,22 @@ export type GraphQLEventQueryArgs = {
   where?: EventWhereInput;
 };
 
+export type StringCondition = {
+  eq?: string;
+  neq?: string;
+};
+
+export type NumberCondition = {
+  eq?: number;
+  neq?: number;
+  gte?: number;
+  lte?: number;
+};
+
 export type EventWhereInput = {
-  email?: string;
-  eventName?: string;
+  email?: StringCondition;
+  eventName?: StringCondition;
+  createdAt?: NumberCondition;
   params?: EventParamsInput;
 };
 

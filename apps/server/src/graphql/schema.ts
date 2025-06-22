@@ -51,9 +51,22 @@ export const createTypeDefs = (config: Config) => `
 
   ${generateMainParamsInput(config)}
 
+  input StringCondition {
+    eq: String
+    neq: String
+  }
+
+  input NumberCondition {
+    eq: Int
+    neq: Int
+    gte: Int
+    lte: Int
+  }
+
   input EventWhereInput {
-    email: String
-    eventName: String
+    email: StringCondition
+    eventName: StringCondition
+    createdAt: NumberCondition
     params: EventParamsInput
   }
 
@@ -129,13 +142,45 @@ export const resolvers = {
         const orderFunc = order === "asc" ? asc : desc;
         const conditions: SQLCondition[] = [];
 
+        // Handle email conditions
         if (where?.email) {
-          conditions.push(sql`${events.originator}->>'Email' = ${where.email}`);
-        }
-        if (where?.eventName) {
-          conditions.push(sql`${events.eventName} = ${where.eventName}`);
+          if (where.email.eq) {
+            conditions.push(
+              sql`${events.originator}->>'Email' = ${where.email.eq}`
+            );
+          }
+          if (where.email.neq) {
+            conditions.push(
+              sql`${events.originator}->>'Email' != ${where.email.neq}`
+            );
+          }
         }
 
+        // Handle eventName conditions
+        if (where?.eventName) {
+          if (where.eventName.eq) {
+            conditions.push(sql`${events.eventName} = ${where.eventName.eq}`);
+          }
+          if (where.eventName.neq) {
+            conditions.push(sql`${events.eventName} != ${where.eventName.neq}`);
+          }
+        }
+
+        // Handle createdAt conditions
+        if (where?.createdAt) {
+          if (where.createdAt.eq !== undefined) {
+            conditions.push(sql`${events.createdAt} = ${where.createdAt.eq}`);
+          }
+          if (where.createdAt.neq !== undefined) {
+            conditions.push(sql`${events.createdAt} != ${where.createdAt.neq}`);
+          }
+          if (where.createdAt.gte !== undefined) {
+            conditions.push(sql`${events.createdAt} >= ${where.createdAt.gte}`);
+          }
+          if (where.createdAt.lte !== undefined) {
+            conditions.push(sql`${events.createdAt} <= ${where.createdAt.lte}`);
+          }
+        }
         // Handle dynamic parameter filtering
         if (where?.params && context?.config) {
           const paramConditions: SQLCondition[] = [];

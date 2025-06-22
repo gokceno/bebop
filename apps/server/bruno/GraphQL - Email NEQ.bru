@@ -1,7 +1,7 @@
 meta {
-  name: GraphQL
+  name: GraphQL - Email NEQ
   type: graphql
-  seq: 2
+  seq: 4
 }
 
 post {
@@ -12,7 +12,13 @@ post {
 
 body:graphql {
   query {
-    events(where: { eventName: { eq: "userLoggedIn" } }, limit: 2, order: "desc") {
+    events(
+      where: {
+        email: { neq: "admin@example.com" }
+      },
+      limit: 10,
+      order: "desc"
+    ) {
       events {
         id
         eventName
@@ -29,5 +35,4 @@ body:graphql {
       total
     }
   }
-
 }

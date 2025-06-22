@@ -1,7 +1,7 @@
 meta {
-  name: GraphQL
+  name: GraphQL - Operators
   type: graphql
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -12,7 +12,14 @@ post {
 
 body:graphql {
   query {
-    events(where: { eventName: { eq: "userLoggedIn" } }, limit: 2, order: "desc") {
+    events(
+      where: {
+        eventName: { eq: "userLoggedIn" },
+        createdAt: { gte: 1640995200, lte: 1672531200 }
+      },
+      limit: 10,
+      order: "desc"
+    ) {
       events {
         id
         eventName
@@ -29,5 +36,4 @@ body:graphql {
       total
     }
   }
-
 }
