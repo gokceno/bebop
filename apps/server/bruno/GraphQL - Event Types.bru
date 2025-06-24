@@ -1,0 +1,21 @@
+meta {
+  name: GraphQL - Event Types
+  type: graphql
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query {
+  	eventTypes {
+      label
+      type
+    }
+  }
+  
+}
