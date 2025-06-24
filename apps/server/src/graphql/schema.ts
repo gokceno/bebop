@@ -45,8 +45,21 @@ const generateMainParamsInput = (config: Config): string => {
   return `input EventParamsInput {\n${eventTypeFields}\n  }`;
 };
 
+// Function to generate GraphQL enum for event types
+const generateEventTypeEnum = (config: Config): string => {
+  const enumValues = config.eventTypes
+    .map((eventType) => {
+      return `  ${eventType.type}`;
+    })
+    .join("\n");
+
+  return `enum EventTypeEnum {\n${enumValues}\n}`;
+};
+
 export const createTypeDefs = (config: Config) => `
   ${JSONDefinition}
+
+  ${generateEventTypeEnum(config)}
 
   ${generateParamInputTypes(config)}
 
@@ -67,6 +80,7 @@ export const createTypeDefs = (config: Config) => `
   input EventWhereInput {
     email: StringCondition
     eventName: StringCondition
+    eventType: EventTypeEnum
     createdAt: NumberCondition
     params: EventParamsInput
   }
@@ -84,11 +98,13 @@ export const createTypeDefs = (config: Config) => `
       order: String = "desc",
       where: EventWhereInput
     ): EventsResponse
+    eventTypes: [EventType]
   }
 
   type Event {
     id: ID
     eventName: String
+    eventType: EventTypeEnum
     originator: JSON
     createdAt: String
     params: [EventParam]
@@ -109,6 +125,11 @@ export const createTypeDefs = (config: Config) => `
     traceData: JSON
     createdAt: String
   }
+
+  type EventType {
+    type: String
+    label: String
+  }
 `;
 
 // Default typeDefs for backward compatibility
@@ -121,6 +142,7 @@ export const resolvers = {
   JSON: JSONResolver,
   Event: {
     createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
+    eventType: (parent: any) => parent.eventName,
   },
   EventParam: {
     createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
@@ -131,6 +153,14 @@ export const resolvers = {
   Query: {
     me: (_: any, __: any, context: GraphQLContext) => {
       return context.jwtPayload?.Email || null;
+    },
+    eventTypes: (_: any, __: any, context: GraphQLContext) => {
+      return (
+        context.config?.eventTypes?.map((eventType) => ({
+          type: eventType.type,
+          label: eventType.label,
+        })) || []
+      );
     },
     events: async (
       _: any,
@@ -165,6 +195,11 @@ export const resolvers = {
           if (where.eventName.neq) {
             conditions.push(sql`${events.eventName} != ${where.eventName.neq}`);
           }
+        }
+
+        // Handle eventType conditions
+        if (where?.eventType) {
+          conditions.push(sql`${events.eventName} = ${where.eventType}`);
         }
 
         // Handle createdAt conditions

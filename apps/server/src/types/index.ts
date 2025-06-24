@@ -16,6 +16,7 @@ export type Config = {
   };
   eventTypes: {
     type: string;
+    label: string;
     trace: boolean;
     params: { [key: string]: "numeric" | "string" }[];
   }[];

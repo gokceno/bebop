@@ -22,6 +22,7 @@ export type NumberCondition = {
 export type EventWhereInput = {
   email?: StringCondition;
   eventName?: StringCondition;
+  eventType?: string;
   createdAt?: NumberCondition;
   params?: EventParamsInput;
 };
@@ -40,6 +41,7 @@ export type EventsResponse = {
 export type Event = {
   id: string;
   eventName: string;
+  eventType: string;
   originator: any;
   createdAt: Date;
   params: EventParam[];
@@ -59,6 +61,11 @@ export type EventTrace = {
   eventId: string;
   traceData: any;
   createdAt: Date;
+};
+
+export type EventType = {
+  type: string;
+  label: string;
 };
 
 export type SQLCondition = SQL<unknown>;
