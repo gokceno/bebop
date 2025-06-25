@@ -248,9 +248,6 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "propertyRemovedFromListingSuccess"
     label: "Evin listeden çıkarılması başarılı."
@@ -265,9 +262,6 @@ event_types:
       - property_id:
           type: string
           label: "Property ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "customerContractTrackingChanged"
     label: "Müşteri sözleşmesi takibi değiştirildi."
@@ -285,9 +279,6 @@ event_types:
       - contract_id:
           type: string
           label: "Contract ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "bookingReservationDateChanged"
     label: "Opsiyon/rezervasyonda tarih değişikliği yapıldı."
@@ -321,9 +312,6 @@ event_types:
       - reservation_id:
           type: string
           label: "Reservation ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "invoiceCreated"
     label: "Fatura yaratıldı."
@@ -341,9 +329,6 @@ event_types:
       - reservation_id:
           type: string
           label: "Reservation ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "reservationPartiallyCancelled"
     label: "Rezervasyon yarı iptal edildi."
@@ -358,9 +343,6 @@ event_types:
       - reservation_id:
           type: string
           label: "Reservation ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "bookingInfoSentToCustomerBySms"
     label: "Müşteriye opsiyon bilgisi SMS ile bildirildi."
@@ -381,9 +363,6 @@ event_types:
       - booking_id:
           type: string
           label: "Booking ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "bookingInfoSentToOwnerBySms"
     label: "Ev sahibine opsiyon bilgisi SMS ile bildirildi."
@@ -404,9 +383,6 @@ event_types:
       - booking_id:
           type: string
           label: "Booking ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "reservationInfoSentToCustomerBySms"
     label: "Müşteriye rezervasyon bilgisi SMS ile bildirildi."
@@ -427,9 +403,6 @@ event_types:
       - reservation_id:
           type: string
           label: "Reservation ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "reservationInfoSentToOwnerBySms"
     label: "Ev sahibine rezervasyon bilgisi SMS ile bildirildi."
@@ -450,9 +423,6 @@ event_types:
       - reservation_id:
           type: string
           label: "Reservation ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "customerSatisfactionCallUnreachableSmsSentSuccess"
     label: "Müşteri memnuniyeti için arandı, ulaşılamadı SMS'i başarılı."
@@ -467,9 +437,6 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "reviewEmailReminderSmsSentToCustomerSuccess"
     label: "Müşteriye yorum mailini hatırlatma SMS'i başarılı."
@@ -484,9 +451,6 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "travelDocumentEmailNotificationSmsSentToCustomerSuccess"
     label: "Müşteriye seyahat belgesinin e-posta ile gönderildi SMS atıldı."
@@ -507,9 +471,6 @@ event_types:
       - document_id:
           type: string
           label: "Document ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "infoMappeGuideEmailNotificationSmsSentToCustomerSuccess"
     label: "Müşteriye Info Mappe ve Tatil Oyun rehberli mail olarak atıldı bilgisi SMS atıldı."
@@ -524,9 +485,6 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "paymentReminderSmsSentToCustomerSuccess"
     label: "Müşteriye bugün ödeme yapmadığı taktirde opsiyonunun iptal olacağı SMS'i atıldı."
@@ -547,9 +505,6 @@ event_types:
       - booking_id:
           type: string
           label: "Booking ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "partiallyCancelledReservationCancelled"
     label: "Yarı iptal olan rezervasyon iptal edildi."
@@ -564,9 +519,6 @@ event_types:
       - reservation_id:
           type: string
           label: "Reservation ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
   - type: "newPropertyCreated"
     label: "Yeni ev yaratıldı."
@@ -611,7 +563,4 @@ event_types:
       - property_id:
           type: string
           label: "Property ID"
-      - error_reason:
-          type: string
-          label: "Error Reason"
     trace: true
