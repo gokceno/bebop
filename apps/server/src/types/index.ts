@@ -18,7 +18,7 @@ export type Config = {
     type: string;
     label: string;
     trace: boolean;
-    params: { [key: string]: "numeric" | "string" }[];
+    params: { [key: string]: { type: "numeric" | "string"; label: string } }[];
   }[];
 };
 

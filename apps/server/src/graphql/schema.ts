@@ -17,9 +17,11 @@ const generateParamInputTypes = (config: Config): string => {
       const paramFields = eventType.params
         .map((paramObj) => {
           const paramName = Object.keys(paramObj)[0];
-          const paramType = paramObj[paramName];
+          const paramConfig = paramObj[paramName];
           const conditionType =
-            paramType === "numeric" ? "NumberCondition" : "StringCondition";
+            paramConfig.type === "numeric"
+              ? "NumberCondition"
+              : "StringCondition";
           return `${paramName}: ${conditionType}`;
         })
         .join("\n");

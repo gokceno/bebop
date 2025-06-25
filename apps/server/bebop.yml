@@ -13,359 +13,624 @@ event_types:
   - type: "userLoggedIn"
     label: "Sisteme giriş yapıldı."
     params:
-      - user_id: string
+      - user_id:
+          type: string
+          label: "User ID"
     trace: true
   - type: "bookingCreated"
     label: "Opsiyon yapıldı."
     params:
-      - booking_id: string
-      - property_id: string
+      - booking_id:
+          type: string
+          label: "Booking ID"
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: true
   - type: "bookingRemoved"
     label: "Opsiyon silindi."
     params:
-      - booking_id: string
+      - booking_id:
+          type: string
+          label: "Booking ID"
     trace: true
   - type: "reservationCreated"
     label: "Rezervasyon yapıldı."
     params:
-      - reservation_id: string
-      - property_id: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: true
   - type: "reservationCancelled"
     label: "Rezervasyon iptal edildi."
     params:
-      - reservation_id: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "optionConvertedToReservation"
     label: "Opsiyon rezervasyona çevrildi."
     params:
-      - booking_id: string
-      - reservation_id: string
+      - booking_id:
+          type: string
+          label: "Booking ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "closureApplied"
     label: "Kapatma yapıldı."
     params:
-      - property_id: string
-      - date_range: string
+      - property_id:
+          type: string
+          label: "Property ID"
+      - date_range:
+          type: string
+          label: "Date Range"
     trace: true
   - type: "closureRemoved"
     label: "Kapatma kaldırıldı."
     params:
-      - property_id: string
-      - date_range: string
+      - property_id:
+          type: string
+          label: "Property ID"
+      - date_range:
+          type: string
+          label: "Date Range"
     trace: true
   - type: "monthlyPriceEntered"
     label: "Aylık fiyat girişi yapıldı."
     params:
-      - property_id: string
-      - month: string
-      - price: number
+      - property_id:
+          type: string
+          label: "Property ID"
+      - month:
+          type: string
+          label: "Month"
+          values:
+            - "JANUARY"
+            - "FEBRUARY"
+            - "MARCH"
+            - "APRIL"
+            - "MAY"
+            - "JUNE"
+            - "JULY"
+            - "AUGUST"
+            - "SEPTEMBER"
+            - "OCTOBER"
+            - "NOVEMBER"
+            - "DECEMBER"
+      - price:
+          type: number
+          label: "Price"
     trace: false
   - type: "dateRangePriceEntered"
     label: "Belirli tarih aralığı fiyat girişi yapıldı."
     params:
-      - property_id: string
-      - date_range: string
-      - price: number
+      - property_id:
+          type: string
+          label: "Property ID"
+      - date_range:
+          type: string
+          label: "Date Range"
+      - price:
+          type: number
+          label: "Price"
     trace: false
   - type: "discountRateAppliedToSpecificDates"
     label: "İndirim oranı belirli tarihlere yapıldı."
     params:
-      - property_id: string
-      - date_range: string
-      - discount_rate: number
+      - property_id:
+          type: string
+          label: "Property ID"
+      - date_range:
+          type: string
+          label: "Date Range"
+      - discount_rate:
+          type: number
+          label: "Discount Rate"
     trace: false
   - type: "customerContractCreated"
     label: "Müşteri sözleşmesi yaratıldı."
     params:
-      - contract_id: string
-      - customer_id: string
+      - contract_id:
+          type: string
+          label: "Contract ID"
+      - customer_id:
+          type: string
+          label: "Customer ID"
     trace: true
   - type: "paymentFormCreated"
     label: "Ödeme formu yaratıldı."
     params:
-      - form_id: string
-      - reservation_id: string
+      - form_id:
+          type: string
+          label: "Form ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "reservationFormCreated"
     label: "Rezervasyon formu yaratıldı."
     params:
-      - form_id: string
-      - property_id: string
+      - form_id:
+          type: string
+          label: "Form ID"
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: true
   - type: "travelDocumentCreated"
     label: "Seyahat belgesi yaratıldı."
     params:
-      - document_id: string
-      - reservation_id: string
+      - document_id:
+          type: string
+          label: "Document ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "customerContractSentToCustomer"
     label: "Müşteri sözleşmesi müşteriye gönderildi."
     params:
-      - contract_id: string
-      - customer_id: string
+      - contract_id:
+          type: string
+          label: "Contract ID"
+      - customer_id:
+          type: string
+          label: "Customer ID"
     trace: true
   - type: "customerContractSendFailedToCustomer"
     label: "Müşteri sözleşmesi müşteriye gönderilemedi."
     params:
-      - contract_id: string
-      - customer_id: string
-      - error_reason: string
+      - contract_id:
+          type: string
+          label: "Contract ID"
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "paymentFormSentToOwner"
     label: "Ödeme formu ev sahibine gönderildi."
     params:
-      - form_id: string
-      - owner_id: string
+      - form_id:
+          type: string
+          label: "Form ID"
+      - owner_id:
+          type: string
+          label: "Owner ID"
     trace: true
   - type: "paymentFormSendFailedToOwner"
     label: "Ödeme formu ev sahibine gönderilemedi."
     params:
-      - form_id: string
-      - owner_id: string
-      - error_reason: string
+      - form_id:
+          type: string
+          label: "Form ID"
+      - owner_id:
+          type: string
+          label: "Owner ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "reservationFormSentToOwner"
     label: "Rezervasyon formu ev sahibine gönderildi."
     params:
-      - form_id: string
-      - owner_id: string
+      - form_id:
+          type: string
+          label: "Form ID"
+      - owner_id:
+          type: string
+          label: "Owner ID"
     trace: true
   - type: "reservationFormSendFailedToOwner"
     label: "Rezervasyon formu ev sahibine gönderilemedi."
     params:
-      - form_id: string
-      - owner_id: string
-      - error_reason: string
+      - form_id:
+          type: string
+          label: "Form ID"
+      - owner_id:
+          type: string
+          label: "Owner ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "travelDocumentSentToCustomer"
     label: "Seyahat belgesi müşteriye gönderildi."
     params:
-      - document_id: string
-      - customer_id: string
+      - document_id:
+          type: string
+          label: "Document ID"
+      - customer_id:
+          type: string
+          label: "Customer ID"
     trace: true
   - type: "travelDocumentSendFailedToCustomer"
     label: "Seyahat belgesi müşteriye gönderilemedi."
     params:
-      - document_id: string
-      - customer_id: string
-      - error_reason: string
+      - document_id:
+          type: string
+          label: "Document ID"
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "propertyRemovedFromListingSuccess"
     label: "Evin listeden çıkarılması başarılı."
     params:
-      - property_id: string
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: true
   - type: "propertyRemovedFromListingFailed"
     label: "Evin listeden çıkarılması başarısız."
     params:
-      - property_id: string
-      - error_reason: string
+      - property_id:
+          type: string
+          label: "Property ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "customerContractTrackingChanged"
     label: "Müşteri sözleşmesi takibi değiştirildi."
     params:
-      - contract_id: string
-      - tracking_status: string
+      - contract_id:
+          type: string
+          label: "Contract ID"
+      - tracking_status:
+          type: string
+          label: "Tracking Status"
+          values:
+            - "SENT"
+            - "DELIVERED"
+            - "OPENED"
+            - "BOUNCED"
+            - "FAILED"
     trace: true
   - type: "customerContractTrackingChangeFailed"
     label: "Müşteri sözleşmesi takibi değiştirilemedi."
     params:
-      - contract_id: string
-      - error_reason: string
+      - contract_id:
+          type: string
+          label: "Contract ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "bookingReservationDateChanged"
     label: "Opsiyon/rezervasyonda tarih değişikliği yapıldı."
     params:
-      - booking_id: string
-      - old_dates: string
-      - new_dates: string
+      - booking_id:
+          type: string
+          label: "Booking ID"
+      - old_dates:
+          type: string
+          label: "Old Dates"
+      - new_dates:
+          type: string
+          label: "New Dates"
     trace: true
   - type: "vacationReviewEmailSentToCustomer"
     label: "Müşteriye tatilini yorumla maili gönderildi."
     params:
-      - customer_id: string
-      - reservation_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: false
   - type: "vacationReviewEmailSendFailedToCustomer"
     label: "Müşteriye tatilini yorumla maili gönderilemedi."
     params:
-      - customer_id: string
-      - reservation_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "invoiceCreated"
     label: "Fatura yaratıldı."
     params:
-      - invoice_id: string
-      - reservation_id: string
+      - invoice_id:
+          type: string
+          label: "Invoice ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "invoiceCreateFailed"
     label: "Fatura yaratılamadı."
     params:
-      - reservation_id: string
-      - error_reason: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "reservationPartiallyCancelled"
     label: "Rezervasyon yarı iptal edildi."
     params:
-      - reservation_id: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "reservationPartiallyCancelFailed"
     label: "Rezervasyon yarı iptal edilemedi."
     params:
-      - reservation_id: string
-      - error_reason: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "bookingInfoSentToCustomerBySms"
     label: "Müşteriye opsiyon bilgisi SMS ile bildirildi."
     params:
-      - customer_id: string
-      - booking_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - booking_id:
+          type: string
+          label: "Booking ID"
     trace: false
   - type: "bookingInfoSendFailedToCustomerBySms"
     label: "Müşteriye opsiyon bilgisi SMS ile bildirilemedi."
     params:
-      - customer_id: string
-      - booking_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - booking_id:
+          type: string
+          label: "Booking ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "bookingInfoSentToOwnerBySms"
     label: "Ev sahibine opsiyon bilgisi SMS ile bildirildi."
     params:
-      - owner_id: string
-      - booking_id: string
+      - owner_id:
+          type: string
+          label: "Owner ID"
+      - booking_id:
+          type: string
+          label: "Booking ID"
     trace: false
   - type: "bookingInfoSendFailedToOwnerBySms"
     label: "Ev sahibine opsiyon bilgisi SMS ile bildirilemedi."
     params:
-      - owner_id: string
-      - booking_id: string
-      - error_reason: string
+      - owner_id:
+          type: string
+          label: "Owner ID"
+      - booking_id:
+          type: string
+          label: "Booking ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "reservationInfoSentToCustomerBySms"
     label: "Müşteriye rezervasyon bilgisi SMS ile bildirildi."
     params:
-      - customer_id: string
-      - reservation_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: false
   - type: "reservationInfoSendFailedToCustomerBySms"
     label: "Müşteriye rezervasyon bilgisi SMS ile bildirilemedi."
     params:
-      - customer_id: string
-      - reservation_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "reservationInfoSentToOwnerBySms"
     label: "Ev sahibine rezervasyon bilgisi SMS ile bildirildi."
     params:
-      - owner_id: string
-      - reservation_id: string
+      - owner_id:
+          type: string
+          label: "Owner ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: false
   - type: "reservationInfoSendFailedToOwnerBySms"
     label: "Ev sahibine rezervasyon bilgisi SMS ile bildirilemedi."
     params:
-      - owner_id: string
-      - reservation_id: string
-      - error_reason: string
+      - owner_id:
+          type: string
+          label: "Owner ID"
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "customerSatisfactionCallUnreachableSmsSentSuccess"
     label: "Müşteri memnuniyeti için arandı, ulaşılamadı SMS'i başarılı."
     params:
-      - customer_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
     trace: false
   - type: "customerSatisfactionCallUnreachableSmsSentFailed"
     label: "Müşteri memnuniyeti için arandı, ulaşılamadı SMS'i başarısız."
     params:
-      - customer_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "reviewEmailReminderSmsSentToCustomerSuccess"
     label: "Müşteriye yorum mailini hatırlatma SMS'i başarılı."
     params:
-      - customer_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
     trace: false
   - type: "reviewEmailReminderSmsSentToCustomerFailed"
     label: "Müşteriye yorum mailini hatırlatma SMS'i başarısız."
     params:
-      - customer_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "travelDocumentEmailNotificationSmsSentToCustomerSuccess"
     label: "Müşteriye seyahat belgesinin e-posta ile gönderildi SMS atıldı."
     params:
-      - customer_id: string
-      - document_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - document_id:
+          type: string
+          label: "Document ID"
     trace: false
   - type: "travelDocumentEmailNotificationSmsSentToCustomerFailed"
     label: "Müşteriye seyahat belgesinin e-posta ile gönderildi SMS atılamadı."
     params:
-      - customer_id: string
-      - document_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - document_id:
+          type: string
+          label: "Document ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "infoMappeGuideEmailNotificationSmsSentToCustomerSuccess"
     label: "Müşteriye Info Mappe ve Tatil Oyun rehberli mail olarak atıldı bilgisi SMS atıldı."
     params:
-      - customer_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
     trace: false
   - type: "infoMappeGuideEmailNotificationSmsSentToCustomerFailed"
     label: "Müşteriye Info Mappe ve Tatil Oyun rehberli mail olarak atıldı bilgisi SMS atılamadı."
     params:
-      - customer_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "paymentReminderSmsSentToCustomerSuccess"
     label: "Müşteriye bugün ödeme yapmadığı taktirde opsiyonunun iptal olacağı SMS'i atıldı."
     params:
-      - customer_id: string
-      - booking_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - booking_id:
+          type: string
+          label: "Booking ID"
     trace: false
   - type: "paymentReminderSmsSentToCustomerFailed"
     label: "Müşteriye bugün ödeme yapmadığı taktirde opsiyonunun iptal olacağı SMS'i atılmadı."
     params:
-      - customer_id: string
-      - booking_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - booking_id:
+          type: string
+          label: "Booking ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "partiallyCancelledReservationCancelled"
     label: "Yarı iptal olan rezervasyon iptal edildi."
     params:
-      - reservation_id: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
     trace: true
   - type: "partiallyCancelledReservationCancelFailed"
     label: "Yarı iptal olan rezervasyon iptal edilemedi."
     params:
-      - reservation_id: string
-      - error_reason: string
+      - reservation_id:
+          type: string
+          label: "Reservation ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true
   - type: "newPropertyCreated"
     label: "Yeni ev yaratıldı."
     params:
-      - property_id: string
-      - owner_id: string
+      - property_id:
+          type: string
+          label: "Property ID"
+      - owner_id:
+          type: string
+          label: "Owner ID"
     trace: true
   - type: "propertyOpenedForOnlineSales"
     label: "Ev internet satışına açıldı."
     params:
-      - property_id: string
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: true
   - type: "propertyClosedForOnlineSales"
     label: "Ev internet satışına kapatıldı."
     params:
-      - property_id: string
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: true
   - type: "infoMappeEmailSentToCustomer"
     label: "Müşteriye Info Mappe maili gönderildi."
     params:
-      - customer_id: string
-      - property_id: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - property_id:
+          type: string
+          label: "Property ID"
     trace: false
   - type: "infoMappeEmailSendFailedToCustomer"
     label: "Müşteriye Info Mappe maili gönderilemedi."
     params:
-      - customer_id: string
-      - property_id: string
-      - error_reason: string
+      - customer_id:
+          type: string
+          label: "Customer ID"
+      - property_id:
+          type: string
+          label: "Property ID"
+      - error_reason:
+          type: string
+          label: "Error Reason"
     trace: true

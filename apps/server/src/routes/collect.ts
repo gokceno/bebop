@@ -41,10 +41,10 @@ export default async function collectRoute(fastify: FastifyInstance) {
       const paramsSchema: any = {};
       if (eventType.params) {
         eventType.params.forEach((param: any) => {
-          Object.entries(param).forEach(([key, type]) => {
-            if (type === "number") {
+          Object.entries(param).forEach(([key, paramConfig]: [string, any]) => {
+            if (paramConfig.type === "number") {
               paramsSchema[key] = z.number();
-            } else if (type === "string") {
+            } else if (paramConfig.type === "string") {
               paramsSchema[key] = z.string();
             } else {
               paramsSchema[key] = z.unknown();

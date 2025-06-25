@@ -55,7 +55,10 @@ const configSchema = z.object({
       params: z.array(
         z.record(
           z.string(),
-          z.union([z.literal("number"), z.literal("string")])
+          z.object({
+            type: z.union([z.literal("number"), z.literal("string")]),
+            label: z.string(),
+          })
         )
       ),
     })
