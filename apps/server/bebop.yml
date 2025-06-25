@@ -90,19 +90,6 @@ event_types:
       - month:
           type: string
           label: "Month"
-          values:
-            - "JANUARY"
-            - "FEBRUARY"
-            - "MARCH"
-            - "APRIL"
-            - "MAY"
-            - "JUNE"
-            - "JULY"
-            - "AUGUST"
-            - "SEPTEMBER"
-            - "OCTOBER"
-            - "NOVEMBER"
-            - "DECEMBER"
       - price:
           type: number
           label: "Price"
@@ -291,12 +278,6 @@ event_types:
       - tracking_status:
           type: string
           label: "Tracking Status"
-          values:
-            - "SENT"
-            - "DELIVERED"
-            - "OPENED"
-            - "BOUNCED"
-            - "FAILED"
     trace: true
   - type: "customerContractTrackingChangeFailed"
     label: "Müşteri sözleşmesi takibi değiştirilemedi."
