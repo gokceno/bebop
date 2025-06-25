@@ -101,6 +101,7 @@ export const createTypeDefs = (config: Config) => `
       where: EventWhereInput
     ): EventsResponse
     eventTypes: [EventType]
+    parameters: [Parameter]
   }
 
   type Event {
@@ -131,6 +132,20 @@ export const createTypeDefs = (config: Config) => `
   type EventType {
     type: String
     label: String
+    params: [EventTypeParam]
+  }
+
+  type EventTypeParam {
+    name: String
+    type: String
+    label: String
+  }
+
+  type Parameter {
+    name: String
+    label: String
+    type: String
+    eventTypes: [String]
   }
 `;
 
@@ -161,8 +176,61 @@ export const resolvers = {
         context.config?.eventTypes?.map((eventType) => ({
           type: eventType.type,
           label: eventType.label,
+          params: eventType.params.map((paramObj) => {
+            const paramName = Object.keys(paramObj)[0];
+            const paramConfig = paramObj[paramName];
+            return {
+              name: paramName,
+              type: paramConfig.type,
+              label: paramConfig.label,
+            };
+          }),
         })) || []
       );
+    },
+    parameters: (_: any, __: any, context: GraphQLContext) => {
+      if (!context.config?.eventTypes) {
+        return [];
+      }
+
+      const paramMap = new Map<
+        string,
+        {
+          name: string;
+          label: string;
+          type: string;
+          eventTypes: Set<string>;
+        }
+      >();
+
+      // Collect all parameters across event types
+      context.config.eventTypes.forEach((eventType) => {
+        eventType.params.forEach((paramObj) => {
+          const paramName = Object.keys(paramObj)[0];
+          const paramConfig = paramObj[paramName];
+
+          if (paramMap.has(paramName)) {
+            paramMap.get(paramName)!.eventTypes.add(eventType.type);
+          } else {
+            paramMap.set(paramName, {
+              name: paramName,
+              label: paramConfig.label,
+              type: paramConfig.type,
+              eventTypes: new Set([eventType.type]),
+            });
+          }
+        });
+      });
+
+      // Convert to array and sort by parameter name
+      return Array.from(paramMap.values())
+        .map((param) => ({
+          name: param.name,
+          label: param.label,
+          type: param.type,
+          eventTypes: Array.from(param.eventTypes).sort(),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
     },
     events: async (
       _: any,

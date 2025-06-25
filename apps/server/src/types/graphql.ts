@@ -66,6 +66,20 @@ export type EventTrace = {
 export type EventType = {
   type: string;
   label: string;
+  params: EventTypeParam[];
+};
+
+export type EventTypeParam = {
+  name: string;
+  type: string;
+  label: string;
+};
+
+export type Parameter = {
+  name: string;
+  label: string;
+  type: string;
+  eventTypes: string[];
 };
 
 export type SQLCondition = SQL<unknown>;

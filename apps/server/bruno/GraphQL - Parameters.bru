@@ -1,0 +1,23 @@
+meta {
+  name: GraphQL - Parameters
+  type: graphql
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query {
+    parameters {
+      name
+      label
+  		type
+      eventTypes
+    }
+  }
+  
+}
