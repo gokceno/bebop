@@ -26,7 +26,7 @@ export default async function graphqlRoute(fastify: FastifyInstance) {
         fastify.logger.error([...args]);
       },
     },
-    graphiql: true,
+    graphiql: false,
     cors: {
       origin: fastify.config.auth.cors?.allowedOrigins,
       credentials: true,

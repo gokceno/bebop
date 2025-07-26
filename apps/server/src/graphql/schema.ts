@@ -104,6 +104,10 @@ export const createTypeDefs = (config: Config) => `
     parameters: [Parameter]
   }
 
+  type Subscription {
+    eventsStream: Event
+  }
+
   type Event {
     id: ID
     eventName: String
@@ -411,6 +415,39 @@ export const resolvers = {
         context.logger?.error("Error fetching events:", error);
         throw new Error("Failed to fetch events");
       }
+    },
+  },
+  Subscription: {
+    eventsStream: {
+      subscribe: async function* (_: any, __: any, context: GraphQLContext) {
+        let lastCheckedTimestamp = DateTime.now().toUnixInteger();
+        while (true) {
+          try {
+            const newEvents =
+              (await db?.query.events.findMany({
+                limit: 20,
+                with: {
+                  params: true,
+                  traces: true,
+                },
+                where: sql`${events.createdAt} > ${lastCheckedTimestamp}`,
+                orderBy: () => [asc(events.createdAt)],
+              })) || [];
+
+            for (const event of newEvents) {
+              if (event.createdAt) {
+                lastCheckedTimestamp = DateTime.fromJSDate(
+                  event.createdAt
+                ).toUnixInteger();
+              }
+              yield { eventsStream: event };
+            }
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          } catch (error) {
+            context.logger?.error("Error in eventsStream subscription:", error);
+          }
+        }
+      },
     },
   },
 };

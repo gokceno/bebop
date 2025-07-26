@@ -43,6 +43,7 @@ export type JWTPayload = {
 export interface ICollectHandler {
   handlerName: string;
   target: string[];
+  satisfies: string[];
   handle: (
     $event: string,
     $params: ParamsInput,
