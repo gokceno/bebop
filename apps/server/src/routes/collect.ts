@@ -96,9 +96,9 @@ export default async function collectRoute(fastify: FastifyInstance) {
           `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
         );
 
-      const handlers = [new DefaultCollectHandler()].filter(
-        (h) => h.target.includes($event) || h.target.includes("*")
-      );
+      const handlers = [new DefaultCollectHandler()]
+        .filter((h) => h.satisfies.includes(authMethod))
+        .filter((h) => h.target.includes($event) || h.target.includes("*"));
 
       const eventIds: object[] = [];
       for (const handler of handlers) {

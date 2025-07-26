@@ -4,6 +4,7 @@ import type { ICollectHandler, JWTPayload, ParamsInput } from "../../types";
 export class Default implements ICollectHandler {
   public handlerName = "default";
   public target = ["*"];
+  public satisfies = ["jwt", "bearer"];
   public handle = async (
     event: string,
     params: ParamsInput,
