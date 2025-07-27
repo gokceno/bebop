@@ -1,5 +1,18 @@
 # bebop-server
 
+## 0.4.0
+
+### Minor Changes
+
+- 4b7ca4e: Added CLI for monitoring events in live.
+- 47f0a52: Added GraphQL subscriptions to stream events with SSE.
+- 2e5f2e3: bebop.yml updated to include param labels; GraphQL query added to fetch those params along with their data.
+- c36a61d: Added "satisfies" to event handlers to check the authMethod in each handler.
+
+### Patch Changes
+
+- 6853903: GraphQL "event" now uses "EventType" enum instead of string. Added endpoint to query all event types.
+
 ## 0.3.0
 
 ### Minor Changes
