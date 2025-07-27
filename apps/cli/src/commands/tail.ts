@@ -2,7 +2,14 @@ import { command, string } from "@drizzle-team/brocli";
 import { createClient } from "graphql-sse";
 import chalk from "chalk";
 import * as emoji from "node-emoji";
-import { DateTime } from "luxon";
+import type {
+  EventType,
+  Parameter,
+  LogEntry,
+  LogEntryParameter,
+} from "../types";
+import { fetchDependents } from "../utils/fetchers";
+import { timestamp as formatTimestamp } from "../utils/formatters";
 
 const tail = command({
   name: "tail",
@@ -20,7 +27,7 @@ const tail = command({
         Accept: "text/event-stream",
       },
     });
-
+    const { eventTypes, parameters } = await fetchDependents();
     try {
       const query = client.iterate({
         query: `
@@ -42,7 +49,13 @@ const tail = command({
       console.log("Starting to tail events...");
       for await (const result of query) {
         if (result.data) {
-          console.log(lineMapper(result.data?.eventsStream as LogEntry));
+          console.log(
+            lineMapper(
+              result.data?.eventsStream as LogEntry,
+              eventTypes,
+              parameters
+            )
+          );
         }
         if (result.errors) {
           console.error(emoji.get(":stop:"), "GraphQL errors:", result.errors);
@@ -54,31 +67,18 @@ const tail = command({
   },
 });
 
-const formatTimestamp = (createdAt: Date | string) => {
-  let dateTime: DateTime;
+const lineMapper = (
+  entry: LogEntry,
+  eventTypes: EventType[],
+  parameters: Parameter[]
+) => {
+  const displayEventName =
+    eventTypes.find((et) => et.type === entry.eventName)?.label ||
+    entry.eventName;
 
-  if (typeof createdAt === "string") {
-    dateTime = DateTime.fromISO(createdAt);
-  } else {
-    dateTime = DateTime.fromJSDate(createdAt);
-  }
-
-  if (!dateTime.isValid) {
-    console.warn("Invalid DateTime:", createdAt, dateTime.invalidReason);
-    return String(createdAt);
-  }
-
-  const today = DateTime.now().startOf("day");
-  const entryDate = dateTime.startOf("day");
-
-  if (entryDate.equals(today)) {
-    return dateTime.toFormat("HH:mm:ss");
-  } else {
-    return dateTime.toFormat("yyyy-MM-dd HH:mm:ss");
-  }
-};
-
-const lineMapper = (entry: LogEntry) => {
+  const getParameterLabel = (paramName: string) => {
+    return parameters.find((p) => p.name === paramName)?.label || paramName;
+  };
   const mappers = [
     {
       forEvents: ["error", "critical", "crit"],
@@ -86,12 +86,14 @@ const lineMapper = (entry: LogEntry) => {
         const params = entry.params as Array<LogEntryParameter>;
         const paramLines = params.map(
           (param: LogEntryParameter) =>
-            `${chalk.yellow(param.paramName)}: ${param.paramValue}`
+            `${chalk.yellow(getParameterLabel(param.paramName))}: ${
+              param.paramValue
+            }`
         );
         return [
           chalk.blue(formatTimestamp(entry.createdAt)),
           emoji.get(":bell:"),
-          chalk.red(entry.eventName),
+          chalk.red(displayEventName),
           emoji.get(":bulb:"),
           paramLines.join(", "),
           JSON.stringify(entry.traces.map((t) => t.traceData)),
@@ -104,29 +106,33 @@ const lineMapper = (entry: LogEntry) => {
         const params = entry.params as Array<LogEntryParameter>;
         const paramLines = params.map(
           (param: LogEntryParameter) =>
-            `${chalk.yellow(param.paramName)}: ${param.paramValue}`
+            `${chalk.yellow(getParameterLabel(param.paramName))}: ${
+              param.paramValue
+            }`
         );
         return [
           chalk.blue(formatTimestamp(entry.createdAt)),
           emoji.get(":bell:"),
-          chalk.green(entry.eventName),
+          chalk.green(displayEventName),
           emoji.get(":bulb:"),
           paramLines.join(", "),
         ].join(" ");
       },
     },
     {
-      forEvents: ["warn", "notice"],
+      forEvents: ["warn", "notice", "warning"],
       translate: (entry: LogEntry) => {
         const params = entry.params as Array<LogEntryParameter>;
         const paramLines = params.map(
           (param: LogEntryParameter) =>
-            `${chalk.yellow(param.paramName)}: ${param.paramValue}`
+            `${chalk.yellow(getParameterLabel(param.paramName))}: ${
+              param.paramValue
+            }`
         );
         return [
           chalk.blue(formatTimestamp(entry.createdAt)),
           emoji.get(":bell:"),
-          chalk.yellow(entry.eventName),
+          chalk.yellow(displayEventName),
           emoji.get(":bulb:"),
           paramLines.join(", "),
         ].join(" ");
@@ -138,14 +144,17 @@ const lineMapper = (entry: LogEntry) => {
         const params = entry.params as Array<LogEntryParameter>;
         const paramLines = params.map(
           (param: LogEntryParameter) =>
-            `${chalk.yellow(param.paramName)}: ${param.paramValue}`
+            `${chalk.yellow(getParameterLabel(param.paramName))}: ${
+              param.paramValue
+            }`
         );
         return [
           chalk.blue(formatTimestamp(entry.createdAt)),
           emoji.get(":bell:"),
-          chalk.magenta(entry.eventName),
+          chalk.magenta(displayEventName),
           emoji.get(":bulb:"),
           paramLines.join(", "),
+          chalk.yellow("Trace:"),
           JSON.stringify(entry.traces.map((t) => t.traceData)),
         ].join(" ");
       },
@@ -156,40 +165,27 @@ const lineMapper = (entry: LogEntry) => {
         const params = entry.params || [];
         const paramLines = params.map(
           (param: any) =>
-            `${chalk.yellow(param.paramName)}: ${param.paramValue}`
+            `${chalk.yellow(getParameterLabel(param.paramName))}: ${
+              param.paramValue
+            }`
         );
         return [
           chalk.blue(formatTimestamp(entry.createdAt)),
           emoji.get(":bell:"),
-          chalk.gray(entry.eventName),
+          chalk.gray(displayEventName),
           emoji.get(":bulb:"),
           paramLines.join(", "),
         ].join(" ");
       },
     },
   ];
-  // TODO: Error handling
-  return mappers
-    .filter(
-      (m) => m.forEvents.includes(entry.eventName) || m.forEvents.includes("*")
-    )[0]
-    .translate(entry);
-};
 
-type LogEntry = {
-  eventName: string;
-  createdAt: Date | string;
-  params: Array<LogEntryParameter>;
-  traces: Array<LogEntryTrace>;
-};
-
-type LogEntryParameter = {
-  paramName: string;
-  paramValue: string;
-};
-
-type LogEntryTrace = {
-  traceData: any;
+  const mapper = mappers.find(
+    (m) => m.forEvents.includes(entry.eventName) || m.forEvents.includes("*")
+  );
+  return mapper
+    ? mapper.translate(entry)
+    : `${chalk.blue(formatTimestamp(entry.createdAt))} ${entry.eventName}`;
 };
 
 export default tail;
