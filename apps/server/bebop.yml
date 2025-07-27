@@ -10,6 +10,34 @@ auth:
     allowed_origins:
       - https://bebop.staging.brewww.net
 event_types:
+  - type: error
+    label: Error
+    params:
+      - message:
+          type: string
+          label: Message
+    trace: true
+  - type: info
+    label: Info
+    params:
+      - message:
+          type: string
+          label: Message
+    trace: true
+  - type: warn
+    label: Warning
+    params:
+      - message:
+          type: string
+          label: Message
+    trace: true
+  - type: debug
+    label: Debug
+    params:
+      - message:
+          type: string
+          label: Message
+    trace: true
   - type: "userLoggedIn"
     label: "Sisteme giriş yapıldı."
     params:
