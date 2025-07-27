@@ -8,6 +8,14 @@ A command-line interface tool for Bebop.
 
 Install globally to use the CLI from anywhere:
 
+Add the following line to your `.npmrc` file.
+
+```
+@gokceno:registry=https://npm.pkg.github.com
+```
+
+Then run:
+
 ```bash
 npm install -g @gokceno/bebop-cli
 ```

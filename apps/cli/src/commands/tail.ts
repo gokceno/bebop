@@ -14,20 +14,21 @@ import { timestamp as formatTimestamp } from "../utils/formatters";
 const tail = command({
   name: "tail",
   options: {
-    // "config-file": string()
-    //   .desc("Path to config file")
-    //   .default("../../freelea.yml")
-    //   .required(),
+    url: string().desc("URL to the Bebop GraphQL endpoint.").required(),
+    "api-key": string().desc("API key").required(),
   },
   handler: async (opts) => {
     const client = createClient({
-      url: "http://localhost:3000/graphql",
+      url: opts.url,
       headers: {
-        Authorization: "Bearer bebop-api-key-1",
+        Authorization: `Bearer ${opts["api-key"]}`,
         Accept: "text/event-stream",
       },
     });
-    const { eventTypes, parameters } = await fetchDependents();
+    const { eventTypes, parameters } = await fetchDependents({
+      url: opts.url,
+      apiKey: opts["api-key"],
+    });
     try {
       const query = client.iterate({
         query: `

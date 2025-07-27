@@ -1,16 +1,25 @@
 import type { EventType, Parameter } from "../types";
 import * as emoji from "node-emoji";
 
-export const fetchDependents = async () => {
+export const fetchDependents = async ({
+  url,
+  apiKey,
+}: {
+  url: string;
+  apiKey: string;
+}) => {
   let eventTypes: EventType[] = [];
   let parameters: Parameter[] = [];
 
+  if (!url || !apiKey)
+    throw new Error("Required values (url, apiKey) missing.");
+
   try {
-    const response = await fetch("http://localhost:3000/graphql", {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer bebop-api-key-1",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         query: `
