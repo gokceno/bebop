@@ -8,7 +8,6 @@ export const events = sqliteTable("events", {
     .primaryKey()
     .$defaultFn(() => createId()),
   eventName: text("event_name"),
-  originator: text("originator", { mode: "json" }),
   createdAt: int("created_at", { mode: "timestamp" }).default(
     sql`(unixepoch())`
   ),
@@ -37,9 +36,22 @@ export const eventsTraces = sqliteTable("events_traces", {
   ),
 });
 
+export const eventsClaims = sqliteTable("events_claims", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  eventId: text("event_id"),
+  claimName: text("claim_name"),
+  claimValue: text("claim_value"),
+  createdAt: int("created_at", { mode: "timestamp" }).default(
+    sql`(unixepoch())`
+  ),
+});
+
 export const eventsRelations = relations(events, ({ many }) => ({
   params: many(eventsParams),
   traces: many(eventsTraces),
+  claims: many(eventsClaims),
 }));
 
 export const eventsParamsRelations = relations(eventsParams, ({ one }) => ({
@@ -52,6 +64,13 @@ export const eventsParamsRelations = relations(eventsParams, ({ one }) => ({
 export const eventsTracesRelations = relations(eventsTraces, ({ one }) => ({
   event: one(events, {
     fields: [eventsTraces.eventId],
+    references: [events.id],
+  }),
+}));
+
+export const eventsClaimsRelations = relations(eventsClaims, ({ one }) => ({
+  event: one(events, {
+    fields: [eventsClaims.eventId],
     references: [events.id],
   }),
 }));

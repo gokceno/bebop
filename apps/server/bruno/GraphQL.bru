@@ -12,12 +12,21 @@ post {
 
 body:graphql {
   query {
-    events(where: { eventName: { eq: "userLoggedIn" } }, limit: 2, order: "desc") {
+    events(
+  		where: { 
+        claims: { email: { neq: "jrocket@example.com"}}
+      }
+      limit: 2
+      order: "desc"
+    ) {
       events {
         id
         eventName
         createdAt
-        originator
+        claims {
+          claimName
+          claimValue
+        }
         params {
           paramName
           paramValue
@@ -29,5 +38,5 @@ body:graphql {
       total
     }
   }
-
+  
 }

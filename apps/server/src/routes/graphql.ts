@@ -1,9 +1,9 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { createSchema, createYoga } from "graphql-yoga";
-import { createTypeDefs, resolvers } from "../graphql/schema";
+import { createDynamicTypeDefs, resolvers } from "../graphql/schema";
 
 export default async function graphqlRoute(fastify: FastifyInstance) {
-  const typeDefs = createTypeDefs(fastify.config);
+  const typeDefs = createDynamicTypeDefs(fastify.config);
 
   const schema = createSchema({
     typeDefs,

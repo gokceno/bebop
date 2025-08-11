@@ -9,6 +9,7 @@ export type Config = {
       secret: string;
       maxAge: string;
       mode: "decode" | "verify";
+      claims: string[];
     };
     cors?: {
       allowedOrigins: string[];
@@ -48,7 +49,8 @@ export interface ICollectHandler {
     $event: string,
     $params: ParamsInput,
     $trace: object,
-    jwtPayload: JWTPayload | undefined
+    jwtPayload: JWTPayload | undefined,
+    config: Config
   ) => Promise<object>;
 }
 

@@ -20,17 +20,21 @@ export type NumberCondition = {
 };
 
 export type EventWhereInput = {
-  email?: StringCondition;
   eventName?: StringCondition;
   eventType?: string;
   createdAt?: NumberCondition;
   params?: EventParamsInput;
+  claims?: EventClaimsInput;
 };
 
 export type EventParamsInput = {
   [eventType: string]: {
     [paramName: string]: StringCondition | NumberCondition;
   };
+};
+
+export type EventClaimsInput = {
+  [claimName: string]: StringCondition;
 };
 
 export type EventsResponse = {
@@ -42,10 +46,10 @@ export type Event = {
   id: string;
   eventName: string;
   eventType: string;
-  originator: any;
   createdAt: Date;
   params: EventParam[];
   traces: EventTrace[];
+  claims: EventClaim[];
 };
 
 export type EventParam = {
@@ -60,6 +64,14 @@ export type EventTrace = {
   id: string;
   eventId: string;
   traceData: any;
+  createdAt: Date;
+};
+
+export type EventClaim = {
+  id: string;
+  eventId: string;
+  claimName: string;
+  claimValue: string;
   createdAt: Date;
 };
 
@@ -80,6 +92,10 @@ export type Parameter = {
   label: string;
   type: string;
   eventTypes: string[];
+};
+
+export type ClaimType = {
+  name: string;
 };
 
 export type SQLCondition = SQL<unknown>;

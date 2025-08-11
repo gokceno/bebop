@@ -1,0 +1,20 @@
+meta {
+  name: GraphQL - Claim types
+  type: graphql
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query {
+    claimTypes {
+      name
+    }
+  }
+  
+}

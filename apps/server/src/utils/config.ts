@@ -42,6 +42,7 @@ const configSchema = z.object({
       secret: z.string(),
       max_age: z.string(),
       mode: z.union([z.literal("decode"), z.literal("verify")]),
+      claims: z.array(z.string()),
     }),
     cors: z.object({
       allowed_origins: z.array(z.string().url()),

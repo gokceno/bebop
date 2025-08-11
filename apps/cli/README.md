@@ -1,6 +1,6 @@
 # @gokceno/bebop-cli
 
-A command-line interface tool for Bebop.
+A command-line interface tool for Bebop used mainly for streaming events and log messages from a Bebop Server.
 
 ## Installation
 
@@ -55,7 +55,7 @@ bebop-cli --help
 
 ### Available Commands
 
-- `tail` - Tail command functionality
+- `tail` - Tail logs from Bebop Server in realtime with SSE and GraphQL.
 
 ### Examples
 
@@ -72,7 +72,7 @@ bebop-cli tail
 
 ## Requirements
 
-- Node.js >= 18
+- Bun or Node.js >= 18
 - TypeScript ^5.0.0 (peer dependency)
 
 ## Development

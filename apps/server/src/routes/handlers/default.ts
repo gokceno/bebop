@@ -1,5 +1,10 @@
 import { db, schema } from "../../utils/db";
-import type { ICollectHandler, JWTPayload, ParamsInput } from "../../types";
+import type {
+  ICollectHandler,
+  JWTPayload,
+  ParamsInput,
+  Config,
+} from "../../types";
 
 export class Default implements ICollectHandler {
   public handlerName = "default";
@@ -9,7 +14,8 @@ export class Default implements ICollectHandler {
     event: string,
     params: ParamsInput,
     trace: object,
-    jwtPayload: JWTPayload | undefined
+    jwtPayload: JWTPayload | undefined,
+    config: Config
   ) => {
     const eventData = await db.transaction(async (tx) => {
       // Create the event record
@@ -17,9 +23,21 @@ export class Default implements ICollectHandler {
         .insert(schema.events)
         .values({
           eventName: event,
-          originator: jwtPayload || {},
         })
         .returning();
+
+      // Insert claims
+      if (config.auth.jwt.claims && jwtPayload) {
+        await tx.insert(schema.eventsClaims).values(
+          config.auth.jwt.claims
+            .filter((c) => jwtPayload[c] !== undefined)
+            .map((claimName) => ({
+              eventId: newEvent.id,
+              claimName,
+              claimValue: jwtPayload[claimName] || null,
+            }))
+        );
+      }
 
       // Insert all parameters
       if (params) {
@@ -29,7 +47,7 @@ export class Default implements ICollectHandler {
             paramsEntries.map(([paramName, paramValue]) => ({
               eventId: newEvent.id,
               paramName,
-              paramValue: paramValue?.toString() || "",
+              paramValue: paramValue?.toString() || null,
             }))
           );
         }

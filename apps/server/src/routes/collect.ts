@@ -106,7 +106,8 @@ export default async function collectRoute(fastify: FastifyInstance) {
           $event,
           $params,
           $trace,
-          jwtPayload
+          jwtPayload,
+          fastify.config
         );
         if (eventId !== null) eventIds.push(eventId);
       }

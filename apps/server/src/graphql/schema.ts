@@ -1,6 +1,6 @@
 import { JSONResolver, JSONDefinition } from "graphql-scalars";
 import { DateTime } from "luxon";
-import { events } from "../schema";
+import { events, eventsClaims } from "../schema";
 import { db } from "../utils/db";
 import { desc, asc, sql, SQL, count } from "drizzle-orm";
 import type {
@@ -47,6 +47,22 @@ const generateMainParamsInput = (config: Config): string => {
   return `input EventParamsInput {\n${eventTypeFields}\n  }`;
 };
 
+// Function to generate claim input types based on config claims
+const generateClaimInputTypes = (claimNames: string[]): string => {
+  if (claimNames.length === 0) {
+    return `input EventClaimsInput {\n  _placeholder: String\n}`;
+  }
+
+  const claimFields = claimNames
+    .filter((claimName) => claimName && claimName.trim().length > 0)
+    .map((claimName) => {
+      return `  ${claimName}: StringCondition`;
+    })
+    .join("\n");
+
+  return `input EventClaimsInput {\n${claimFields}\n}`;
+};
+
 // Function to generate GraphQL enum for event types
 const generateEventTypeEnum = (config: Config): string => {
   const enumValues = config.eventTypes
@@ -67,6 +83,8 @@ export const createTypeDefs = (config: Config) => `
 
   ${generateMainParamsInput(config)}
 
+  ${generateClaimInputTypes(config.auth.jwt.claims || [])}
+
   input StringCondition {
     eq: String
     neq: String
@@ -79,12 +97,14 @@ export const createTypeDefs = (config: Config) => `
     lte: Int
   }
 
+
+
   input EventWhereInput {
-    email: StringCondition
     eventName: StringCondition
     eventType: EventTypeEnum
     createdAt: NumberCondition
     params: EventParamsInput
+    claims: EventClaimsInput
   }
 
   type EventsResponse {
@@ -102,6 +122,7 @@ export const createTypeDefs = (config: Config) => `
     ): EventsResponse
     eventTypes: [EventType]
     parameters: [Parameter]
+    claimTypes: [ClaimType]
   }
 
   type Subscription {
@@ -112,10 +133,10 @@ export const createTypeDefs = (config: Config) => `
     id: ID
     eventName: String
     eventType: EventTypeEnum
-    originator: JSON
     createdAt: String
     params: [EventParam]
     traces: [EventTrace]
+    claims: [EventClaim]
   }
 
   type EventParam {
@@ -130,6 +151,14 @@ export const createTypeDefs = (config: Config) => `
     id: ID
     eventId: String
     traceData: JSON
+    createdAt: String
+  }
+
+  type EventClaim {
+    id: ID
+    eventId: String
+    claimName: String
+    claimValue: String
     createdAt: String
   }
 
@@ -151,11 +180,23 @@ export const createTypeDefs = (config: Config) => `
     type: String
     eventTypes: [String]
   }
+
+  type ClaimType {
+    name: String
+  }
 `;
+
+// Function to create typeDefs with claims from config
+export const createDynamicTypeDefs = (config: Config): string => {
+  return createTypeDefs(config);
+};
 
 // Default typeDefs for backward compatibility
 export const typeDefs = createTypeDefs({
-  auth: { bearerTokens: [], jwt: { mode: "verify", secret: "", maxAge: "" } },
+  auth: {
+    bearerTokens: [],
+    jwt: { mode: "verify", secret: "", maxAge: "", claims: [] },
+  },
   eventTypes: [],
 });
 
@@ -169,6 +210,9 @@ export const resolvers = {
     createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
   },
   EventTrace: {
+    createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
+  },
+  EventClaim: {
     createdAt: (parent: any) => DateTime.fromJSDate(parent.createdAt).toISO(),
   },
   Query: {
@@ -236,6 +280,10 @@ export const resolvers = {
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
     },
+    claimTypes: (_: any, __: any, context: GraphQLContext) => {
+      const claimNames = context.config?.auth.jwt.claims || [];
+      return claimNames.map((claimName) => ({ name: claimName }));
+    },
     events: async (
       _: any,
       args: GraphQLEventQueryArgs,
@@ -246,20 +294,6 @@ export const resolvers = {
       try {
         const orderFunc = order === "asc" ? asc : desc;
         const conditions: SQLCondition[] = [];
-
-        // Handle email conditions
-        if (where?.email) {
-          if (where.email.eq) {
-            conditions.push(
-              sql`${events.originator}->>'Email' = ${where.email.eq}`
-            );
-          }
-          if (where.email.neq) {
-            conditions.push(
-              sql`${events.originator}->>'Email' != ${where.email.neq}`
-            );
-          }
-        }
 
         // Handle eventName conditions
         if (where?.eventName) {
@@ -291,6 +325,54 @@ export const resolvers = {
             conditions.push(sql`${events.createdAt} <= ${where.createdAt.lte}`);
           }
         }
+
+        // Handle claims conditions
+        if (where?.claims) {
+          const claimsConditions: SQLCondition[] = [];
+
+          Object.keys(where.claims).forEach((claimName) => {
+            const claimCondition = where.claims![claimName];
+            if (claimCondition && typeof claimCondition === "object") {
+              // Handle eq condition
+              if (
+                claimCondition.eq !== undefined &&
+                claimCondition.eq !== null
+              ) {
+                claimsConditions.push(
+                  sql`EXISTS (
+                    SELECT 1 FROM events_claims ec
+                    WHERE ec.event_id = ${events.id}
+                    AND ec.claim_name = ${claimName}
+                    AND ec.claim_value = ${claimCondition.eq.toString()}
+                  )`
+                );
+              }
+              // Handle neq condition
+              if (
+                claimCondition.neq !== undefined &&
+                claimCondition.neq !== null
+              ) {
+                claimsConditions.push(
+                  sql`NOT EXISTS (
+                    SELECT 1 FROM events_claims ec
+                    WHERE ec.event_id = ${events.id}
+                    AND ec.claim_name = ${claimName}
+                    AND ec.claim_value = ${claimCondition.neq.toString()}
+                  )`
+                );
+              }
+            }
+          });
+
+          if (claimsConditions.length > 0) {
+            conditions.push(
+              claimsConditions.reduce((acc, condition, index) =>
+                index === 0 ? condition : sql`${acc} AND ${condition}`
+              )
+            );
+          }
+        }
+
         // Handle dynamic parameter filtering
         if (where?.params && context?.config) {
           const paramConditions: SQLCondition[] = [];
@@ -402,6 +484,7 @@ export const resolvers = {
             with: {
               params: true,
               traces: true,
+              claims: true,
             },
             where: whereClause,
             orderBy: () => [orderFunc(events.createdAt)],
@@ -429,6 +512,7 @@ export const resolvers = {
                 with: {
                   params: true,
                   traces: true,
+                  claims: true,
                 },
                 where: sql`${events.createdAt} > ${lastCheckedTimestamp}`,
                 orderBy: () => [asc(events.createdAt)],

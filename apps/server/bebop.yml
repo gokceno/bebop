@@ -6,6 +6,8 @@ auth:
     secret: "bebop-analytics-super-secret-key"
     max_age: 1d
     mode: verify
+    claims:
+      - email
   cors:
     allowed_origins:
       - https://bebop.staging.brewww.net
