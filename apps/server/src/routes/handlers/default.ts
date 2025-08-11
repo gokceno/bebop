@@ -28,15 +28,18 @@ export class Default implements ICollectHandler {
 
       // Insert claims
       if (config.auth.jwt.claims && jwtPayload) {
-        await tx.insert(schema.eventsClaims).values(
-          config.auth.jwt.claims
-            .filter((c) => jwtPayload[c] !== undefined)
-            .map((claimName) => ({
+        const claims = config.auth.jwt.claims.filter(
+          (c) => jwtPayload[c] !== undefined
+        );
+        if (claims.length) {
+          await tx.insert(schema.eventsClaims).values(
+            claims.map((claimName) => ({
               eventId: newEvent.id,
               claimName,
               claimValue: jwtPayload[claimName] || null,
             }))
-        );
+          );
+        }
       }
 
       // Insert all parameters
