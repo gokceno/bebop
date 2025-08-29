@@ -7,7 +7,7 @@ import graphqlRoute from "./routes/graphql";
 import type { Config } from "./types";
 import type { FastifyInstance } from "fastify";
 
-const config: Config = yaml("bebop.yml");
+const config: Config = yaml(process.env.CONFIG_PATH || "bebop.yml");
 
 const fastify: FastifyInstance = Fastify();
 
