@@ -2,9 +2,9 @@ import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
   dbCredentials: {
-    url: `./db/bebop.sqlite`,
+    url: process.env.DB_PATH || "./db/bebop.sqlite",
   },
-  schema: `./src/schema.ts`,
-  out: `./db/migrations/`,
+  schema: "./src/schema.ts",
+  out: "./db/migrations/",
   dialect: "sqlite",
 });
