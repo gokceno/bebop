@@ -17,7 +17,7 @@ body:graphql {
         eventName: { eq: "monthlyPriceEntered" },
         params: {
           monthlyPriceEntered: {
-            propertyId: { eq: "12345" }
+            propertyId: { eq: "property_12345" }
           }
         }
       },
@@ -28,7 +28,6 @@ body:graphql {
         id
         eventName
         createdAt
-        originator
         params {
           paramName
           paramValue

@@ -3,11 +3,12 @@ auth:
     - bebop-api-key-1
     - bebop-api-key-2
   jwt:
-    secret: "bebop-analytics-super-secret-key"
+    secret: "qwertyuiopasdfghjklzxcvbnm123456"
     max_age: 1d
     mode: verify
     claims:
       - email
+      - nameSurname
   cors:
     allowed_origins:
       - https://bebop.staging.brewww.net

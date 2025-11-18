@@ -63,6 +63,22 @@ const generateClaimInputTypes = (claimNames: string[]): string => {
   return `input EventClaimsInput {\n${claimFields}\n}`;
 };
 
+// Function to generate Me type based on config claims
+const generateMeType = (claimNames: string[]): string => {
+  if (claimNames.length === 0) {
+    return `type Me {\n  _placeholder: String\n}`;
+  }
+
+  const claimFields = claimNames
+    .filter((claimName) => claimName && claimName.trim().length > 0)
+    .map((claimName) => {
+      return `  ${claimName}: String`;
+    })
+    .join("\n");
+
+  return `type Me {\n${claimFields}\n}`;
+};
+
 // Function to generate GraphQL enum for event types
 const generateEventTypeEnum = (config: Config): string => {
   const enumValues = config.eventTypes
@@ -85,6 +101,8 @@ export const createTypeDefs = (config: Config) => `
 
   ${generateClaimInputTypes(config.auth.jwt.claims || [])}
 
+  ${generateMeType(config.auth.jwt.claims || [])}
+
   input StringCondition {
     eq: String
     neq: String
@@ -96,8 +114,6 @@ export const createTypeDefs = (config: Config) => `
     gte: Int
     lte: Int
   }
-
-
 
   input EventWhereInput {
     eventName: StringCondition
@@ -113,7 +129,7 @@ export const createTypeDefs = (config: Config) => `
   }
 
   type Query {
-    me: String
+    me: Me
     events(
       limit: Int = 50,
       offset: Int = 0,
@@ -217,7 +233,19 @@ export const resolvers = {
   },
   Query: {
     me: (_: any, __: any, context: GraphQLContext) => {
-      return context.jwtPayload?.Email || null;
+      if (!context.jwtPayload) {
+        return null;
+      }
+
+      // Return an object with all claims from the JWT payload
+      const claimNames = context.config?.auth.jwt.claims || [];
+      const result: { [key: string]: string | null } = {};
+
+      claimNames.forEach((claimName) => {
+        result[claimName] = context.jwtPayload?.[claimName] || null;
+      });
+
+      return result;
     },
     eventTypes: (_: any, __: any, context: GraphQLContext) => {
       return (

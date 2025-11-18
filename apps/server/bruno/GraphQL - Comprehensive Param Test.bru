@@ -15,7 +15,7 @@ body:graphql {
     events(
       where: {
         eventName: { eq: "monthlyPriceEntered" },
-        email: { neq: "test@example.com" },
+        claims: { email: { neq: "test@example.com"}}
         createdAt: { gte: 1640995200, lte: 1672531200 },
         params: {
           monthlyPriceEntered: {
@@ -33,7 +33,6 @@ body:graphql {
         id
         eventName
         createdAt
-        originator
         params {
           paramName
           paramValue

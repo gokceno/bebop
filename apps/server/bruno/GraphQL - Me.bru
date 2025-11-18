@@ -1,0 +1,20 @@
+meta {
+  name: GraphQL - Me
+  type: graphql
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query {
+  	me {
+      Email
+    }  
+  }
+  
+}
