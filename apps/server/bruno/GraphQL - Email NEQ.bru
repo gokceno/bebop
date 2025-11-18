@@ -13,17 +13,14 @@ post {
 body:graphql {
   query {
     events(
-      where: {
-        email: { neq: "admin@example.com" }
-      },
-      limit: 10,
+      where: { claims: { email: { neq: "admin@example.com" } } }
+      limit: 10
       order: "desc"
     ) {
       events {
         id
         eventName
         createdAt
-        originator
         params {
           paramName
           paramValue
@@ -35,4 +32,5 @@ body:graphql {
       total
     }
   }
+  
 }

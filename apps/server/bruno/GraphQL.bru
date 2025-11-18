@@ -13,8 +13,10 @@ post {
 body:graphql {
   query {
     events(
-  		where: { 
-        claims: { email: { neq: "jrocket@example.com"}}
+      where: {
+        eventName: { in: ["bookingInfoSentToCustomerBySms"] }
+        paramsFlat: { customerId: { eq: "customer_12345" } }
+        claims: { email: { eq: "gokcen@brewww.com" } }
       }
       limit: 2
       order: "desc"
