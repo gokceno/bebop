@@ -1,5 +1,20 @@
 # bebop-server
 
+## 0.5.0
+
+### Minor Changes
+
+- 58f6ab2: Changed the way claims are handled; replaced "originator" with events_claims table and added queries to fetch claim types and claims within events
+- d6cf27c: Add paramsFlat filtering and in operator
+
+  Generate EventParamsFlatInput and include it in the GraphQL schema. Add in to StringCondition and paramsFlat to EventWhereInput types. Implement resolver handling for eventName.in and where.paramsFlat using events_params with EXISTS/NOT EXISTS checks and numeric comparisons (gte/lte) and support for eq/neq/in conditions.
+
+### Patch Changes
+
+- ddb2fc3: Added CONFIG_PATH environment variable.
+- f24ca67: Added DB_PATH environment variable.
+- 91ffeb6: Fixed Me query to return from claims defined in the config file.
+
 ## 0.4.0
 
 ### Minor Changes

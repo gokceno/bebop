@@ -1,7 +1,7 @@
 {
   "name": "@gokceno/bebop-cli",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CLI tool for Bebop",
   "main": "src/index.ts",
   "repository": "git+https://github.com/gokceno/bebop.git",
