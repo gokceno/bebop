@@ -169,7 +169,6 @@ query {
     id
     eventName
     createdAt
-    originator
     params {
       paramName
       paramValue
