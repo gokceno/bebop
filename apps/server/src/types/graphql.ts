@@ -10,6 +10,7 @@ export type GraphQLEventQueryArgs = {
 export type StringCondition = {
   eq?: string;
   neq?: string;
+  in?: string[];
 };
 
 export type NumberCondition = {
@@ -24,6 +25,7 @@ export type EventWhereInput = {
   eventType?: string;
   createdAt?: NumberCondition;
   params?: EventParamsInput;
+  paramsFlat?: EventParamsFlatInput;
   claims?: EventClaimsInput;
 };
 
@@ -31,6 +33,10 @@ export type EventParamsInput = {
   [eventType: string]: {
     [paramName: string]: StringCondition | NumberCondition;
   };
+};
+
+export type EventParamsFlatInput = {
+  [paramName: string]: StringCondition | NumberCondition;
 };
 
 export type EventClaimsInput = {

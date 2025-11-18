@@ -47,6 +47,36 @@ const generateMainParamsInput = (config: Config): string => {
   return `input EventParamsInput {\n${eventTypeFields}\n  }`;
 };
 
+// Function to generate flattened params input for multi-event queries
+const generateFlatParamsInput = (config: Config): string => {
+  const paramMap = new Map<string, { type: string }>();
+
+  // Collect all unique parameters across all event types
+  config.eventTypes.forEach((eventType) => {
+    eventType.params.forEach((paramObj) => {
+      const paramName = Object.keys(paramObj)[0];
+      const paramConfig = paramObj[paramName];
+      if (!paramMap.has(paramName)) {
+        paramMap.set(paramName, { type: paramConfig.type });
+      }
+    });
+  });
+
+  const paramFields = Array.from(paramMap.entries())
+    .map(([paramName, paramConfig]) => {
+      const conditionType =
+        paramConfig.type === "numeric" ? "NumberCondition" : "StringCondition";
+      return `  ${paramName}: ${conditionType}`;
+    })
+    .join("\n");
+
+  if (paramFields) {
+    return `input EventParamsFlatInput {\n${paramFields}\n}`;
+  }
+
+  return `input EventParamsFlatInput {\n  _placeholder: String\n}`;
+};
+
 // Function to generate claim input types based on config claims
 const generateClaimInputTypes = (claimNames: string[]): string => {
   if (claimNames.length === 0) {
@@ -99,6 +129,8 @@ export const createTypeDefs = (config: Config) => `
 
   ${generateMainParamsInput(config)}
 
+  ${generateFlatParamsInput(config)}
+
   ${generateClaimInputTypes(config.auth.jwt.claims || [])}
 
   ${generateMeType(config.auth.jwt.claims || [])}
@@ -106,6 +138,7 @@ export const createTypeDefs = (config: Config) => `
   input StringCondition {
     eq: String
     neq: String
+    in: [String!]
   }
 
   input NumberCondition {
@@ -120,6 +153,7 @@ export const createTypeDefs = (config: Config) => `
     eventType: EventTypeEnum
     createdAt: NumberCondition
     params: EventParamsInput
+    paramsFlat: EventParamsFlatInput
     claims: EventClaimsInput
   }
 
@@ -331,6 +365,20 @@ export const resolvers = {
           if (where.eventName.neq) {
             conditions.push(sql`${events.eventName} != ${where.eventName.neq}`);
           }
+          if (
+            where.eventName.in &&
+            Array.isArray(where.eventName.in) &&
+            where.eventName.in.length > 0
+          ) {
+            const inConditions = where.eventName.in.map(
+              (val) => sql`${events.eventName} = ${val}`
+            );
+            conditions.push(
+              inConditions.reduce((acc, condition, index) =>
+                index === 0 ? condition : sql`${acc} OR ${condition}`
+              )
+            );
+          }
         }
 
         // Handle eventType conditions
@@ -483,6 +531,108 @@ export const resolvers = {
           if (paramConditions.length > 0) {
             conditions.push(
               paramConditions.reduce((acc, condition, index) =>
+                index === 0 ? condition : sql`${acc} AND ${condition}`
+              )
+            );
+          }
+        }
+
+        // Handle flattened parameter filtering (cross-event-type queries)
+        if (where?.paramsFlat) {
+          const flatParamConditions: SQLCondition[] = [];
+
+          Object.keys(where.paramsFlat).forEach((paramName) => {
+            const paramCondition = where.paramsFlat![paramName];
+            if (paramCondition && typeof paramCondition === "object") {
+              // Handle eq condition
+              if (
+                paramCondition.eq !== undefined &&
+                paramCondition.eq !== null
+              ) {
+                flatParamConditions.push(
+                  sql`EXISTS (
+                    SELECT 1 FROM events_params ep
+                    WHERE ep.event_id = ${events.id}
+                    AND ep.param_name = ${paramName}
+                    AND ep.param_value = ${paramCondition.eq.toString()}
+                  )`
+                );
+              }
+              // Handle neq condition
+              if (
+                paramCondition.neq !== undefined &&
+                paramCondition.neq !== null
+              ) {
+                flatParamConditions.push(
+                  sql`NOT EXISTS (
+                    SELECT 1 FROM events_params ep
+                    WHERE ep.event_id = ${events.id}
+                    AND ep.param_name = ${paramName}
+                    AND ep.param_value = ${paramCondition.neq.toString()}
+                  )`
+                );
+              }
+              // Handle in condition
+              if (
+                "in" in paramCondition &&
+                Array.isArray(paramCondition.in) &&
+                paramCondition.in.length > 0
+              ) {
+                const inConditions = paramCondition.in.map(
+                  (val: any) =>
+                    sql`EXISTS (
+                    SELECT 1 FROM events_params ep
+                    WHERE ep.event_id = ${events.id}
+                    AND ep.param_name = ${paramName}
+                    AND ep.param_value = ${val.toString()}
+                  )`
+                );
+                flatParamConditions.push(
+                  inConditions.reduce(
+                    (
+                      acc: SQLCondition,
+                      condition: SQLCondition,
+                      index: number
+                    ) => (index === 0 ? condition : sql`${acc} OR ${condition}`)
+                  )
+                );
+              }
+              // Handle gte condition (for numeric params)
+              if (
+                "gte" in paramCondition &&
+                paramCondition.gte !== undefined &&
+                paramCondition.gte !== null
+              ) {
+                flatParamConditions.push(
+                  sql`EXISTS (
+                    SELECT 1 FROM events_params ep
+                    WHERE ep.event_id = ${events.id}
+                    AND ep.param_name = ${paramName}
+                    AND CAST(ep.param_value AS REAL) >= ${paramCondition.gte}
+                  )`
+                );
+              }
+              // Handle lte condition (for numeric params)
+              if (
+                "lte" in paramCondition &&
+                paramCondition.lte !== undefined &&
+                paramCondition.lte !== null
+              ) {
+                flatParamConditions.push(
+                  sql`EXISTS (
+                    SELECT 1 FROM events_params ep
+                    WHERE ep.event_id = ${events.id}
+                    AND ep.param_name = ${paramName}
+                    AND CAST(ep.param_value AS REAL) <= ${paramCondition.lte}
+                  )`
+                );
+              }
+            }
+          });
+
+          if (flatParamConditions.length > 0) {
+            conditions.push(
+              flatParamConditions.reduce((acc, condition, index) =>
                 index === 0 ? condition : sql`${acc} AND ${condition}`
               )
             );
