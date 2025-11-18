@@ -197,59 +197,182 @@ Access the GraphQL playground at `http://localhost:3000/graphql`
 **Get current user:**
 ```graphql
 query {
-  me
+  me {
+    email
+    name
+    # Any other JWT claims configured in bebop.yml
+  }
 }
 ```
 
-**Query events:**
-```graphql
-query {
-  events(limit: 10, offset: 0, order: "desc") {
-    id
-    eventName
-    originator
-    createdAt
-    params {
-      paramName
-      paramValue
-    }
-    traces {
-      traceData
+**Response:**
+```json
+{
+  "data": {
+    "me": {
+      "email": "user@example.com",
+      "name": "John Doe"
     }
   }
 }
 ```
 
-**Filter events:**
+The `me` query returns fields based on the JWT claims configured in your `bebop.yml`. Each claim becomes a queryable field.
+
+**Query events:**
+```graphql
+query {
+  events(limit: 10, offset: 0, order: "desc") {
+    events {
+      id
+      eventName
+      eventType
+      createdAt
+      params {
+        paramName
+        paramValue
+      }
+      traces {
+        traceData
+      }
+      claims {
+        claimName
+        claimValue
+      }
+    }
+    total
+  }
+}
+```
+
+**Filter events by specific event type:**
 ```graphql
 query {
   events(
     where: {
-      email: "user@example.com"
-      eventName: "user_signup"
+      eventType: user_signup
       params: {
         user_signup: {
-          source: "homepage"
+          source: { eq: "homepage" }
         }
       }
     }
   ) {
-    id
-    eventName
-    createdAt
-    params {
-      paramName
-      paramValue
+    events {
+      id
+      eventName
+      createdAt
+      params {
+        paramName
+        paramValue
+      }
     }
+    total
+  }
+}
+```
+
+**Filter by multiple event names:**
+```graphql
+query {
+  events(
+    where: {
+      eventName: {
+        in: ["user_signup", "purchase", "page_view"]
+      }
+    }
+  ) {
+    events {
+      id
+      eventName
+      createdAt
+    }
+    total
+  }
+}
+```
+
+**Filter using flat parameters (across all event types):**
+```graphql
+query {
+  events(
+    where: {
+      paramsFlat: {
+        email: { eq: "user@example.com" }
+        user_id: { eq: "user123" }
+      }
+    }
+  ) {
+    events {
+      id
+      eventName
+      createdAt
+      params {
+        paramName
+        paramValue
+      }
+    }
+    total
+  }
+}
+```
+
+**Filter by JWT claims:**
+```graphql
+query {
+  events(
+    where: {
+      claims: {
+        email: { eq: "user@example.com" }
+      }
+    }
+  ) {
+    events {
+      id
+      eventName
+      createdAt
+      claims {
+        claimName
+        claimValue
+      }
+    }
+    total
   }
 }
 ```
 
 #### Filter Options
 
-- `email`: Filter by originator email (from JWT payload)
-- `eventName`: Filter by specific event type
-- `params`: Filter by event parameters (dynamically generated based on your config)
+**Where Clause:**
+- `eventName`: Filter by event name
+  - `eq`: Exact match (e.g., `{ eq: "user_signup" }`)
+  - `neq`: Not equal (e.g., `{ neq: "page_view" }`)
+  - `in`: Match any of multiple values (e.g., `{ in: ["user_signup", "purchase"] }`)
+- `eventType`: Filter by specific event type enum value (e.g., `eventType: user_signup`)
+- `createdAt`: Filter by timestamp
+  - `eq`: Exact timestamp
+  - `neq`: Not equal to timestamp
+  - `gte`: Greater than or equal
+  - `lte`: Less than or equal
+- `params`: Filter by event-specific parameters (nested by event type)
+  - Example: `params: { user_signup: { source: { eq: "homepage" } } }`
+- `paramsFlat`: Filter by parameters across all event types (flat structure)
+  - Example: `paramsFlat: { email: { eq: "user@example.com" }, user_id: { eq: "123" } }`
+- `claims`: Filter by JWT claims
+  - Example: `claims: { email: { eq: "user@example.com" } }`
+
+**String Conditions:**
+- `eq`: Equals
+- `neq`: Not equals
+- `in`: In array
+
+**Number Conditions:**
+- `eq`: Equals
+- `neq`: Not equals
+- `gte`: Greater than or equal
+- `lte`: Less than or equal
+
+**Pagination & Ordering:**
 - `limit`: Number of results (default: 50)
 - `offset`: Pagination offset (default: 0)
 - `order`: Sort order "asc" or "desc" (default: "desc")

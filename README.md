@@ -121,7 +121,7 @@ event_types:
       - page_url: string
       - user_id: string
     trace: false
-  
+
   - type: button_click
     params:
       - button_id: string
@@ -195,7 +195,7 @@ The included `docker-compose.yml` sets up the server with persistent data storag
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    HTTPS/REST    ┌─────────────────┐
+┌─────────────────┐    HTTPS/REST     ┌─────────────────┐
 │   Bebop Client  │ ────────────────► │   Bebop Server  │
 │                 │                   │                 │
 │ • Browser       │                   │ • Fastify       │
