@@ -40,8 +40,9 @@ const configSchema = z.object({
     bearer_tokens: z.array(z.string()),
     jwt: z.object({
       secret: z.string(),
-      max_age: z.string(),
-      mode: z.union([z.literal("decode"), z.literal("verify")]),
+      opts: z.object({
+        max_age: z.string(),
+      }),
       claims: z.array(z.string()),
     }),
     cors: z.object({

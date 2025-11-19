@@ -4,8 +4,8 @@ auth:
     - bebop-api-key-2
   jwt:
     secret: "qwertyuiopasdfghjklzxcvbnm123456"
-    max_age: 1d
-    mode: verify
+    opts:
+      max_age: 60d
     claims:
       - email
       - nameSurname
