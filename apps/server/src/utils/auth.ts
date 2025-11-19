@@ -15,9 +15,7 @@ export function setupAuth(fastify: FastifyInstance, config: Config): void {
     "verifyJWT",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        // TODO: Implement jwtVerify per config file.
-        const jwtPayload = await request.jwtDecode();
-
+        const jwtPayload = await request.jwtVerify();
         (request as any).authMethod = "jwt";
         (request as any).jwtPayload = jwtPayload;
       } catch (err) {
