@@ -8,7 +8,9 @@ auth:
       max_age: 60d
     claims:
       - email
-      - nameSurname
+      - first_name
+      - last_name
+      - user_id
   cors:
     allowed_origins:
       - https://bebop.staging.brewww.net
@@ -51,7 +53,7 @@ event_types:
   - type: "bookingCreated"
     label: "Opsiyon yapıldı."
     params:
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
       - property_id:
@@ -61,7 +63,7 @@ event_types:
   - type: "bookingRemoved"
     label: "Opsiyon silindi."
     params:
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: true
@@ -85,7 +87,7 @@ event_types:
   - type: "optionConvertedToReservation"
     label: "Opsiyon rezervasyona çevrildi."
     params:
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
       - reservation_id:
@@ -314,7 +316,7 @@ event_types:
   - type: "bookingReservationDateChanged"
     label: "Opsiyon/rezervasyonda tarih değişikliği yapıldı."
     params:
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
       - old_dates:
@@ -381,7 +383,7 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: false
@@ -391,7 +393,7 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: true
@@ -401,7 +403,7 @@ event_types:
       - owner_id:
           type: string
           label: "Owner ID"
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: false
@@ -411,7 +413,7 @@ event_types:
       - owner_id:
           type: string
           label: "Owner ID"
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: true
@@ -523,7 +525,7 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: false
@@ -533,7 +535,7 @@ event_types:
       - customer_id:
           type: string
           label: "Customer ID"
-      - booking_id:
+      - reservation_id:
           type: string
           label: "Booking ID"
     trace: true
