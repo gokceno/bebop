@@ -55,7 +55,7 @@ event_types:
     params:
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
       - property_id:
           type: string
           label: "Property ID"
@@ -65,7 +65,7 @@ event_types:
     params:
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: true
   - type: "reservationCreated"
     label: "Rezervasyon yapıldı."
@@ -89,7 +89,7 @@ event_types:
     params:
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
       - reservation_id:
           type: string
           label: "Reservation ID"
@@ -318,7 +318,7 @@ event_types:
     params:
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
       - old_dates:
           type: string
           label: "Old Dates"
@@ -385,7 +385,7 @@ event_types:
           label: "Customer ID"
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: false
   - type: "bookingInfoSendFailedToCustomerBySms"
     label: "Müşteriye opsiyon bilgisi SMS ile bildirilemedi."
@@ -395,7 +395,7 @@ event_types:
           label: "Customer ID"
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: true
   - type: "bookingInfoSentToOwnerBySms"
     label: "Ev sahibine opsiyon bilgisi SMS ile bildirildi."
@@ -405,7 +405,7 @@ event_types:
           label: "Owner ID"
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: false
   - type: "bookingInfoSendFailedToOwnerBySms"
     label: "Ev sahibine opsiyon bilgisi SMS ile bildirilemedi."
@@ -415,7 +415,7 @@ event_types:
           label: "Owner ID"
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: true
   - type: "reservationInfoSentToCustomerBySms"
     label: "Müşteriye rezervasyon bilgisi SMS ile bildirildi."
@@ -527,7 +527,7 @@ event_types:
           label: "Customer ID"
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: false
   - type: "paymentReminderSmsSentToCustomerFailed"
     label: "Müşteriye bugün ödeme yapmadığı taktirde opsiyonunun iptal olacağı SMS'i atılmadı."
@@ -537,7 +537,7 @@ event_types:
           label: "Customer ID"
       - reservation_id:
           type: string
-          label: "Booking ID"
+          label: "Reservation ID"
     trace: true
   - type: "partiallyCancelledReservationCancelled"
     label: "Yarı iptal olan rezervasyon iptal edildi."
