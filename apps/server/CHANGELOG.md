@@ -1,5 +1,11 @@
 # bebop-server
 
+## 0.6.1
+
+### Patch Changes
+
+- 80b73e2: Move Config type import to utils/config
+
 ## 0.6.0
 
 ### Minor Changes
