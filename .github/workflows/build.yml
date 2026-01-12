@@ -13,6 +13,10 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v3
 
+      - name: Read version from package.json
+        id: package_version
+        run: echo "version=$(jq -r .version ./apps/server/package.json)" >> $GITHUB_OUTPUT
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -27,4 +31,6 @@ jobs:
           build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           context: ./apps/server
           push: true
-          tags: ghcr.io/gokceno/bebop-server:latest
+          tags: |
+            ghcr.io/gokceno/bebop-server:latest
+            ghcr.io/gokceno/bebop-server:${{ steps.package_version.outputs.version }}
