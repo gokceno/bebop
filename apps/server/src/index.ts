@@ -1,13 +1,12 @@
 import Fastify from "fastify";
-import { yaml } from "./utils/config";
+import { parse, type Config } from "./utils/config";
 import { logger } from "./utils/logger";
 import { setupAuth } from "./utils/auth";
 import collectRoute from "./routes/collect";
 import graphqlRoute from "./routes/graphql";
-import type { Config } from "./types";
 import type { FastifyInstance } from "fastify";
 
-const config: Config = yaml(process.env.CONFIG_PATH || "bebop.yml");
+const config: Config = parse(process.env.CONFIG_PATH || "bebop.yml");
 
 const fastify: FastifyInstance = Fastify();
 

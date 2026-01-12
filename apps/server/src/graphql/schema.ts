@@ -6,9 +6,9 @@ import { desc, asc, sql, SQL, count } from "drizzle-orm";
 import type {
   GraphQLEventQueryArgs,
   GraphQLContext,
-  Config,
   SQLCondition,
 } from "../types";
+import type { Config } from "../utils/config";
 
 // Function to generate dynamic parameter input types based on config
 const generateParamInputTypes = (config: Config): string => {
@@ -19,7 +19,7 @@ const generateParamInputTypes = (config: Config): string => {
           const paramName = Object.keys(paramObj)[0];
           const paramConfig = paramObj[paramName];
           const conditionType =
-            paramConfig.type === "numeric"
+            paramConfig.type === "number"
               ? "NumberCondition"
               : "StringCondition";
           return `${paramName}: ${conditionType}`;
@@ -240,15 +240,6 @@ export const createTypeDefs = (config: Config) => `
 export const createDynamicTypeDefs = (config: Config): string => {
   return createTypeDefs(config);
 };
-
-// Default typeDefs for backward compatibility
-export const typeDefs = createTypeDefs({
-  auth: {
-    bearerTokens: [],
-    jwt: { mode: "verify", secret: "", maxAge: "", claims: [] },
-  },
-  eventTypes: [],
-});
 
 export const resolvers = {
   JSON: JSONResolver,

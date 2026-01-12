@@ -1,13 +1,13 @@
 import fastifyJwt from "@fastify/jwt";
 import fastifyAuth from "@fastify/auth";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import type { Config } from "../types";
+import type { Config } from "./config";
 
 export function setupAuth(fastify: FastifyInstance, config: Config): void {
   fastify.register(fastifyJwt, {
     secret: config.auth.jwt.secret,
     verify: {
-      maxAge: config.auth.jwt.maxAge,
+      maxAge: config.auth.jwt.opts.maxAge,
     },
   });
   fastify.register(fastifyAuth);

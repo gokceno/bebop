@@ -1,27 +1,7 @@
 import type { Logger } from "winston";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { schema } from "../utils/db";
-
-export type Config = {
-  auth: {
-    bearerTokens: string[];
-    jwt: {
-      secret: string;
-      maxAge: string;
-      mode: "decode" | "verify";
-      claims: string[];
-    };
-    cors?: {
-      allowedOrigins: string[];
-    };
-  };
-  eventTypes: {
-    type: string;
-    label: string;
-    trace: boolean;
-    params: { [key: string]: { type: "numeric" | "string"; label: string } }[];
-  }[];
-};
+import type { Config } from "../utils/config";
 
 export type CollectPayload = {
   $event: string;

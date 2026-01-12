@@ -1,4 +1,5 @@
-import type { Config, JWTPayload } from ".";
+import type { JWTPayload } from ".";
+import type { Config } from "../utils/config";
 import type { Logger } from "winston";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type * as schema from "../schema";

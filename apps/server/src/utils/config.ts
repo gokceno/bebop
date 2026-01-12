@@ -1,39 +1,6 @@
-import fs from "fs";
-import YAML from "yaml";
-import { z } from "zod";
-import { type Config } from "../types";
-
-const yaml = (configFileName: string): Config => {
-  if (!fs.existsSync(configFileName)) {
-    throw new Error("Config file not found");
-  }
-  const file = fs.readFileSync(configFileName, "utf8");
-  const snakeToCamelCase = (str: string): string =>
-    str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-
-  const convertKeysToCamelCase = (obj: object): object => {
-    if (Array.isArray(obj)) {
-      return obj.map((item) => convertKeysToCamelCase(item));
-    }
-    if (obj && typeof obj === "object") {
-      return Object.fromEntries(
-        Object.entries(obj as object).map(([key, value]) => [
-          snakeToCamelCase(key),
-          convertKeysToCamelCase(value),
-        ])
-      );
-    }
-    return obj;
-  };
-
-  const config: object = YAML.parse(file);
-  const validatedConfig: any = configSchema.safeParse(config);
-  if (!validatedConfig.success) {
-    throw new Error(`Invalid config: ${validatedConfig.error}`);
-  }
-
-  return convertKeysToCamelCase(config) as Config;
-};
+import { create as createConfig } from "@gokceno/konfeti";
+import type { CamelCaseConfig } from "@gokceno/konfeti/types";
+import * as z from "zod";
 
 const configSchema = z.object({
   auth: z.object({
@@ -67,4 +34,7 @@ const configSchema = z.object({
   ),
 });
 
-export { yaml };
+export type RawConfig = z.infer<typeof configSchema>;
+export type Config = CamelCaseConfig<RawConfig>;
+
+export const { parse } = createConfig(configSchema);
