@@ -1,5 +1,25 @@
 # bebop-server
 
+## 0.6.0
+
+### Minor Changes
+
+- 52b97b4: Use Konfeti for config parsing
+
+  Export parse and Config from utils/config and update imports. Rename yaml() to parse() and adjust auth to use jwt.opts.maxAge
+
+- 99cfe25: Optimize event param filtering queries
+
+  Replace per-param correlated EXISTS checks with a single JOIN and GROUP BY/HAVING to reduce subqueries and improve performance. Handle neq conditions with separate NOT EXISTS checks and unify logic for params and paramsFlat.
+
+### Patch Changes
+
+- b2ccbdc: Nest JWT options and use them for verification.
+
+  Move jwt.max_age into jwt.opts (schema and config) and pass opts to jwtVerify. Update example config to set max_age to 60d.
+
+- da214ac: Use jwtVerify instead of jwtDecode for auth.
+
 ## 0.5.0
 
 ### Minor Changes
