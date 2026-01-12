@@ -451,191 +451,197 @@ export const resolvers = {
 
         // Handle dynamic parameter filtering
         if (where?.params && context?.config) {
-          const paramConditions: SQLCondition[] = [];
-
-          // Iterate through each event type in params
+          // Optimized: Use JOIN with aggregation instead of correlated subqueries
           Object.keys(where.params).forEach((eventType) => {
             const eventParams = where.params![eventType];
             if (eventParams && Object.keys(eventParams).length > 0) {
-              // For each parameter in this event type
+              const paramOrConditions: SQLCondition[] = [];
+              const eqParamNames: string[] = [];
+              const neqConditions: SQLCondition[] = [];
+
               Object.keys(eventParams).forEach((paramName) => {
                 const paramCondition = eventParams[paramName];
                 if (paramCondition && typeof paramCondition === "object") {
-                  // Handle eq condition
+                  // Handle eq condition - collect for GROUP BY/HAVING
                   if (
                     paramCondition.eq !== undefined &&
                     paramCondition.eq !== null
                   ) {
-                    paramConditions.push(
-                      sql`EXISTS (
-                        SELECT 1 FROM events_params ep
-                        WHERE ep.event_id = ${events.id}
-                        AND ep.param_name = ${paramName}
-                        AND ep.param_value = ${paramCondition.eq.toString()}
-                        AND ${events.eventName} = ${eventType}
-                      )`
+                    paramOrConditions.push(
+                      sql`(ep.param_name = ${paramName} AND ep.param_value = ${paramCondition.eq.toString()})`
                     );
+                    eqParamNames.push(paramName);
                   }
-                  // Handle neq condition
+
+                  // Handle neq condition - needs separate NOT EXISTS
                   if (
                     paramCondition.neq !== undefined &&
                     paramCondition.neq !== null
                   ) {
-                    paramConditions.push(
+                    neqConditions.push(
                       sql`NOT EXISTS (
-                        SELECT 1 FROM events_params ep
-                        WHERE ep.event_id = ${events.id}
-                        AND ep.param_name = ${paramName}
-                        AND ep.param_value = ${paramCondition.neq.toString()}
-                        AND ${events.eventName} = ${eventType}
+                        SELECT 1 FROM events_params ep_neq
+                        WHERE ep_neq.event_id = ${events.id}
+                        AND ep_neq.param_name = ${paramName}
+                        AND ep_neq.param_value = ${paramCondition.neq.toString()}
                       )`
                     );
                   }
-                  // Handle gte condition (for numeric params)
+
+                  // Handle gte condition
                   if (
                     "gte" in paramCondition &&
                     paramCondition.gte !== undefined &&
                     paramCondition.gte !== null
                   ) {
-                    paramConditions.push(
-                      sql`EXISTS (
-                        SELECT 1 FROM events_params ep
-                        WHERE ep.event_id = ${events.id}
-                        AND ep.param_name = ${paramName}
-                        AND CAST(ep.param_value AS REAL) >= ${paramCondition.gte}
-                        AND ${events.eventName} = ${eventType}
-                      )`
+                    paramOrConditions.push(
+                      sql`(ep.param_name = ${paramName} AND CAST(ep.param_value AS REAL) >= ${paramCondition.gte})`
                     );
+                    eqParamNames.push(paramName);
                   }
-                  // Handle lte condition (for numeric params)
+
+                  // Handle lte condition
                   if (
                     "lte" in paramCondition &&
                     paramCondition.lte !== undefined &&
                     paramCondition.lte !== null
                   ) {
-                    paramConditions.push(
-                      sql`EXISTS (
-                        SELECT 1 FROM events_params ep
-                        WHERE ep.event_id = ${events.id}
-                        AND ep.param_name = ${paramName}
-                        AND CAST(ep.param_value AS REAL) <= ${paramCondition.lte}
-                        AND ${events.eventName} = ${eventType}
-                      )`
+                    paramOrConditions.push(
+                      sql`(ep.param_name = ${paramName} AND CAST(ep.param_value AS REAL) <= ${paramCondition.lte})`
                     );
+                    eqParamNames.push(paramName);
                   }
                 }
               });
+
+              // Build optimized IN subquery with single JOIN
+              if (paramOrConditions.length > 0) {
+                const orClause = paramOrConditions.reduce(
+                  (acc, condition, index) =>
+                    index === 0 ? condition : sql`${acc} OR ${condition}`
+                );
+
+                conditions.push(sql`(
+                  ${events.eventName} = ${eventType}
+                  AND ${events.id} IN (
+                    SELECT ep.event_id
+                    FROM events_params ep
+                    WHERE ${orClause}
+                    GROUP BY ep.event_id
+                    HAVING COUNT(DISTINCT ep.param_name) = ${eqParamNames.length}
+                  )
+                )`);
+              }
+
+              // Add neq conditions separately
+              if (neqConditions.length > 0) {
+                neqConditions.forEach((condition) =>
+                  conditions.push(condition)
+                );
+              }
             }
           });
-
-          if (paramConditions.length > 0) {
-            conditions.push(
-              paramConditions.reduce((acc, condition, index) =>
-                index === 0 ? condition : sql`${acc} AND ${condition}`
-              )
-            );
-          }
         }
 
         // Handle flattened parameter filtering (cross-event-type queries)
+        // Optimized: Use JOIN with aggregation instead of correlated subqueries
         if (where?.paramsFlat) {
-          const flatParamConditions: SQLCondition[] = [];
+          const paramOrConditions: SQLCondition[] = [];
+          const eqParamNames: string[] = [];
+          const neqConditions: SQLCondition[] = [];
 
           Object.keys(where.paramsFlat).forEach((paramName) => {
             const paramCondition = where.paramsFlat![paramName];
             if (paramCondition && typeof paramCondition === "object") {
-              // Handle eq condition
+              // Handle eq condition - collect for GROUP BY/HAVING
               if (
                 paramCondition.eq !== undefined &&
                 paramCondition.eq !== null
               ) {
-                flatParamConditions.push(
-                  sql`EXISTS (
-                    SELECT 1 FROM events_params ep
-                    WHERE ep.event_id = ${events.id}
-                    AND ep.param_name = ${paramName}
-                    AND ep.param_value = ${paramCondition.eq.toString()}
-                  )`
+                paramOrConditions.push(
+                  sql`(ep.param_name = ${paramName} AND ep.param_value = ${paramCondition.eq.toString()})`
                 );
+                eqParamNames.push(paramName);
               }
-              // Handle neq condition
+
+              // Handle neq condition - needs separate NOT EXISTS
               if (
                 paramCondition.neq !== undefined &&
                 paramCondition.neq !== null
               ) {
-                flatParamConditions.push(
+                neqConditions.push(
                   sql`NOT EXISTS (
-                    SELECT 1 FROM events_params ep
-                    WHERE ep.event_id = ${events.id}
-                    AND ep.param_name = ${paramName}
-                    AND ep.param_value = ${paramCondition.neq.toString()}
+                    SELECT 1 FROM events_params ep_neq
+                    WHERE ep_neq.event_id = ${events.id}
+                    AND ep_neq.param_name = ${paramName}
+                    AND ep_neq.param_value = ${paramCondition.neq.toString()}
                   )`
                 );
               }
-              // Handle in condition
+
+              // Handle in condition - OR multiple values for same param
               if (
                 "in" in paramCondition &&
                 Array.isArray(paramCondition.in) &&
                 paramCondition.in.length > 0
               ) {
-                const inConditions = paramCondition.in.map(
-                  (val: any) =>
-                    sql`EXISTS (
-                    SELECT 1 FROM events_params ep
-                    WHERE ep.event_id = ${events.id}
-                    AND ep.param_name = ${paramName}
-                    AND ep.param_value = ${val.toString()}
-                  )`
+                const valueConditions = paramCondition.in.map(
+                  (val: any) => sql`ep.param_value = ${val.toString()}`
                 );
-                flatParamConditions.push(
-                  inConditions.reduce(
-                    (
-                      acc: SQLCondition,
-                      condition: SQLCondition,
-                      index: number
-                    ) => (index === 0 ? condition : sql`${acc} OR ${condition}`)
-                  )
+                const valueOrClause = valueConditions.reduce(
+                  (acc: SQLCondition, condition: SQLCondition, index: number) =>
+                    index === 0 ? condition : sql`${acc} OR ${condition}`
                 );
+                paramOrConditions.push(
+                  sql`(ep.param_name = ${paramName} AND (${valueOrClause}))`
+                );
+                eqParamNames.push(paramName);
               }
-              // Handle gte condition (for numeric params)
+
+              // Handle gte condition
               if (
                 "gte" in paramCondition &&
                 paramCondition.gte !== undefined &&
                 paramCondition.gte !== null
               ) {
-                flatParamConditions.push(
-                  sql`EXISTS (
-                    SELECT 1 FROM events_params ep
-                    WHERE ep.event_id = ${events.id}
-                    AND ep.param_name = ${paramName}
-                    AND CAST(ep.param_value AS REAL) >= ${paramCondition.gte}
-                  )`
+                paramOrConditions.push(
+                  sql`(ep.param_name = ${paramName} AND CAST(ep.param_value AS REAL) >= ${paramCondition.gte})`
                 );
+                eqParamNames.push(paramName);
               }
-              // Handle lte condition (for numeric params)
+
+              // Handle lte condition
               if (
                 "lte" in paramCondition &&
                 paramCondition.lte !== undefined &&
                 paramCondition.lte !== null
               ) {
-                flatParamConditions.push(
-                  sql`EXISTS (
-                    SELECT 1 FROM events_params ep
-                    WHERE ep.event_id = ${events.id}
-                    AND ep.param_name = ${paramName}
-                    AND CAST(ep.param_value AS REAL) <= ${paramCondition.lte}
-                  )`
+                paramOrConditions.push(
+                  sql`(ep.param_name = ${paramName} AND CAST(ep.param_value AS REAL) <= ${paramCondition.lte})`
                 );
+                eqParamNames.push(paramName);
               }
             }
           });
 
-          if (flatParamConditions.length > 0) {
-            conditions.push(
-              flatParamConditions.reduce((acc, condition, index) =>
-                index === 0 ? condition : sql`${acc} AND ${condition}`
-              )
+          // Build optimized IN subquery with single JOIN
+          if (paramOrConditions.length > 0) {
+            const orClause = paramOrConditions.reduce((acc, condition, index) =>
+              index === 0 ? condition : sql`${acc} OR ${condition}`
             );
+
+            conditions.push(sql`${events.id} IN (
+              SELECT ep.event_id
+              FROM events_params ep
+              WHERE ${orClause}
+              GROUP BY ep.event_id
+              HAVING COUNT(DISTINCT ep.param_name) = ${eqParamNames.length}
+            )`);
+          }
+
+          // Add neq conditions separately
+          if (neqConditions.length > 0) {
+            neqConditions.forEach((condition) => conditions.push(condition));
           }
         }
 
