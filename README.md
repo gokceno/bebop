@@ -113,19 +113,36 @@ auth:
     - your-api-key
   jwt:
     secret: your-jwt-secret
-    max_age: 1d
+    opts:
+      max_age: 1d
+    claims:
+      - email
+      - name
+  cors:
+    allowed_origins:
+      - https://yourdomain.com
 
 event_types:
   - type: page_view
+    label: Page View
     params:
-      - page_url: string
-      - user_id: string
+      - page_url:
+          type: string
+          label: Page URL
+      - user_id:
+          type: string
+          label: User ID
     trace: false
 
   - type: button_click
+    label: Button Click
     params:
-      - button_id: string
-      - page: string
+      - button_id:
+          type: string
+          label: Button ID
+      - page:
+          type: string
+          label: Page
     trace: true
 ```
 

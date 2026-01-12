@@ -51,33 +51,53 @@ auth:
     - your-api-key-2
   jwt:
     secret: your-super-secret-jwt-key
-    max_age: 1d
-
-cors:
-  allowed_origins:
-    - https://yourdomain.com
-    - https://app.yourdomain.com
-    - http://localhost:3000
-    - http://localhost:5173
+    opts:
+      max_age: 1d
+    claims:
+      - email
+      - name
+  cors:
+    allowed_origins:
+      - https://yourdomain.com
+      - https://app.yourdomain.com
+      - http://localhost:3000
+      - http://localhost:5173
 
 event_types:
   - type: user_signup
+    label: User Signup
     params:
-      - email: string
-      - source: string
+      - email:
+          type: string
+          label: Email
+      - source:
+          type: string
+          label: Source
     trace: true
 
   - type: page_view
+    label: Page View
     params:
-      - page_url: string
-      - user_id: string
+      - page_url:
+          type: string
+          label: Page URL
+      - user_id:
+          type: string
+          label: User ID
     trace: false
 
   - type: purchase
+    label: Purchase
     params:
-      - amount: numeric
-      - product_id: string
-      - user_id: string
+      - amount:
+          type: number
+          label: Amount
+      - product_id:
+          type: string
+          label: Product ID
+      - user_id:
+          type: string
+          label: User ID
     trace: true
 ```
 
@@ -86,9 +106,8 @@ event_types:
 **Authentication**
 - `bearer_tokens`: Array of valid API keys for bearer token authentication
 - `jwt.secret`: Secret key for JWT token signing and verification
-- `jwt.max_age`: JWT token expiration time (e.g., "1d", "24h", "3600s")
-
-**CORS Configuration**
+- `jwt.opts.max_age`: JWT token expiration time (e.g., "1d", "24h", "3600s")
+- `jwt.claims`: Array of JWT claim names to extract and store
 - `cors.allowed_origins`: Array of allowed origins for cross-origin requests
   - In development, all origins are automatically allowed
   - In production, only specified origins are permitted
@@ -96,9 +115,11 @@ event_types:
 
 **Event Types**
 - `type`: Event name (must be unique)
-- `params`: Array of parameter definitions with name and type
-  - `string`: Text parameters
-  - `numeric`: Number parameters
+- `label`: Human-readable label for the event type (optional)
+- `params`: Array of parameter definitions (objects with parameter name as key)
+  - Each parameter has:
+    - `type`: Either `"string"` or `"number"`
+    - `label`: Human-readable label for the parameter
 - `trace`: Whether this event type supports trace data
 
 ## API Reference
