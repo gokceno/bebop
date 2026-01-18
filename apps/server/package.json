@@ -1,7 +1,7 @@
 {
   "name": "@gokceno/bebop-server",
   "type": "module",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "packageManager": "bun@1.2.13",
   "repository": "git+https://github.com/gokceno/bebop.git",
   "scripts": {

@@ -1,5 +1,11 @@
 # bebop-server
 
+## 0.6.2
+
+### Patch Changes
+
+- 18fdfd2: Disable CORS preflight continuation and return 204
+
 ## 0.6.1
 
 ### Patch Changes
