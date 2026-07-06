@@ -15,8 +15,6 @@ services:
     volumes:
       - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
       - ./apps/server/bebop.yml:/app/bebop.yml
-    environment:
-      - REDIS_URL=redis://redis:6379
     depends_on:
       - redis
 
@@ -29,7 +27,5 @@ services:
     volumes:
       - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
       - ./apps/server/bebop.yml:/app/bebop.yml
-    environment:
-      - REDIS_URL=redis://redis:6379
     depends_on:
       - redis
