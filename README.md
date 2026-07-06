@@ -293,7 +293,7 @@ bun run build
 # Start development (API + worker + Redis)
 cd apps/server
 redis-server
-bun run dev         # API
+bun run dev:api         # API
 bun run dev:worker  # worker
 
 # Run tests
