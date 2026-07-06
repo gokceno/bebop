@@ -114,7 +114,7 @@ redis-server
 # Terminal 1: API server
 cd apps/server
 bun install
-bun run dev
+bun run dev:api
 
 # Terminal 2: worker
 cd apps/server
@@ -255,7 +255,7 @@ bun run delete:all
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    HTTPS/REST     ┌─────────────────┐    enqueue      ┌──────────────┐
+┌─────────────────┐    HTTPS/REST     ┌─────────────────┐    enqueue     ┌───────────────┐
 │   Bebop Client  │ ────────────────► │   Bebop API     │ ─────────────► │  BullMQ/Redis │
 │                 │                   │                 │                │               │
 │ • Browser       │                   │ • Fastify       │                │               │
@@ -267,7 +267,7 @@ bun run delete:all
                                                                                  ▼
                                                                         ┌─────────────────┐
                                                                         │  Bebop Worker   │
-                                                                        │  • SQLite writes  │
+                                                                        │  • SQLite writes│
                                                                         └─────────────────┘
 ```
 
