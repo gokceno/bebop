@@ -3,6 +3,8 @@ services:
     image: redis:alpine
     container_name: bebop-redis
     restart: unless-stopped
+    ports:
+      - 6379:6379
 
   server:
     build:
@@ -10,6 +12,8 @@ services:
     container_name: bebop-server
     command: start:api
     restart: unless-stopped
+    env_file:
+      - ./apps/server/.env
     ports:
       - "3000:3000"
     volumes:
@@ -24,6 +28,8 @@ services:
     container_name: bebop-worker
     command: start:worker
     restart: unless-stopped
+    env_file:
+      - ./apps/server/.env
     volumes:
       - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
       - ./apps/server/bebop.yml:/app/bebop.yml

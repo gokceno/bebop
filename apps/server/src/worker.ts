@@ -38,9 +38,7 @@ const worker = new Worker<CollectJobData, { eventIds: object[] }>(
     return { eventIds };
   },
   {
-    connection: createRedisConnection(
-      process.env.REDIS_URL || config.database.redis.url
-    ),
+    connection: createRedisConnection(config.database.redis.url),
   }
 );
 

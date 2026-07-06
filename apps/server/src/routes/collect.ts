@@ -4,9 +4,7 @@ import type { CollectPayload, JWTPayload, ParamsInput } from "../types";
 import { createCollectQueue } from "../utils/queue";
 
 export default async function collectRoute(fastify: FastifyInstance) {
-  const collectQueue = createCollectQueue(
-    process.env.REDIS_URL || fastify.config.database.redis.url
-  );
+  const collectQueue = createCollectQueue(fastify.config.database.redis.url);
 
   fastify.addHook(
     "preHandler",
