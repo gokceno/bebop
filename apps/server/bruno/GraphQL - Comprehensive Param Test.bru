@@ -14,15 +14,15 @@ body:graphql {
   query {
     events(
       where: {
-        eventName: { eq: "monthlyPriceEntered" },
+        eventName: { eq: "info" },
         claims: { email: { neq: "test@example.com"}}
         createdAt: { gte: 1640995200, lte: 1672531200 },
         params: {
-          monthlyPriceEntered: {
-            propertyId: { neq: "cancelled-123" }
+          info: {
+            message: { neq: "ignored-message" }
           },
-          userLoggedIn: {
-            userId: { neq: "bot-session" }
+          warn: {
+            message: { neq: "ignored-message" }
           }
         }
       },

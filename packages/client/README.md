@@ -131,7 +131,7 @@ A client object with the following methods:
 
 ### `client.send(eventName, eventParams?, eventTrace?)`
 
-Sends an event to the Bebop service and waits for completion (blocking).
+Sends an event to the Bebop service and waits for it to be accepted and queued (blocking). The actual database write happens asynchronously on the server via the worker.
 
 #### Parameters
 
@@ -141,7 +141,7 @@ Sends an event to the Bebop service and waits for completion (blocking).
 
 #### Returns
 
-A Promise that resolves when the event is sent.
+A Promise that resolves when the server has accepted the event.
 
 ### `client.sendAsync(eventName, eventParams?, eventTrace?)`
 

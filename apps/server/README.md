@@ -1,6 +1,6 @@
 # @gokceno/bebop-server
 
-A lightweight, high-performance analytics server built with Fastify, TypeScript, and SQLite. Bebop Server provides a secure, configurable backend for collecting and querying analytics events with support for both REST and GraphQL APIs.
+A lightweight, high-performance analytics server built with Fastify, TypeScript, SQLite, BullMQ, and Redis. Bebop Server provides a secure, configurable backend for collecting and querying analytics events with support for both REST and GraphQL APIs. Event collection is asynchronous: the API validates and enqueues events, and a separate worker writes them to SQLite.
 
 ## Features
 
@@ -10,6 +10,7 @@ A lightweight, high-performance analytics server built with Fastify, TypeScript,
 - 🗄️ **SQLite Database**: Lightweight, serverless database with Drizzle ORM
 - 📈 **GraphQL API**: Rich querying capabilities with dynamic schema generation
 - 🐳 **Docker Ready**: Production-ready containerization
+- 🚀 **PM2 Ready**: Managed process setup for API and worker
 - 📝 **TypeScript**: Full type safety throughout the codebase
 - 🔍 **Event Tracing**: Built-in support for event trace data
 - 🌐 **CORS Support**: Environment-aware Cross-Origin Resource Sharing
@@ -21,6 +22,7 @@ A lightweight, high-performance analytics server built with Fastify, TypeScript,
 
 - [Bun](https://bun.sh/) 1.2.13 or higher
 - Node.js 18+ (if not using Bun)
+- Redis (BullMQ uses Redis for the collect job queue)
 
 ### Installation
 
@@ -32,11 +34,15 @@ cd bebop/apps/server
 # Install dependencies
 bun install
 
-# Start development server
+# Start the API server
 bun run dev
+
+# In a separate terminal, start the collect worker
+bun run dev:worker
 ```
 
-The server will start on `http://localhost:3000`
+The API server will start on `http://localhost:3000`. The worker consumes
+collect jobs from Redis and stores events in the database.
 
 ## Configuration
 
@@ -62,6 +68,10 @@ auth:
       - https://app.yourdomain.com
       - http://localhost:3000
       - http://localhost:5173
+
+database:
+  redis:
+    url: redis://localhost:6379
 
 event_types:
   - type: user_signup
@@ -103,6 +113,9 @@ event_types:
 
 #### Configuration Options
 
+**Database**
+- `database.redis.url`: Redis connection URL used by BullMQ for the collect job queue
+
 **Authentication**
 - `bearer_tokens`: Array of valid API keys for bearer token authentication
 - `jwt.secret`: Secret key for JWT token signing and verification
@@ -121,6 +134,38 @@ event_types:
     - `type`: Either `"string"` or `"number"`
     - `label`: Human-readable label for the parameter
 - `trace`: Whether this event type supports trace data
+
+## Deployment
+
+### Docker Compose
+
+From the repository root:
+
+```bash
+docker compose up -d
+```
+
+This starts Redis, the API server, and the worker. The API is available at `http://localhost:3000`.
+
+### PM2
+
+From the repository root:
+
+```bash
+bun install
+bun run start:all
+```
+
+Other useful commands:
+
+```bash
+bun run start:api     # API only
+bun run start:worker  # worker only
+bun run logs          # tail logs
+bun run stop:all      # stop all
+bun run restart:all   # restart all
+bun run delete:all    # remove all from PM2
+```
 
 ## API Reference
 
@@ -191,11 +236,8 @@ Collect analytics events.
 **Response:**
 ```json
 {
-  "eventIds": [
-    {
-      "default": "clw2x1y2z3000abc123def456"
-    }
-  ],
+  "queued": true,
+  "jobId": "bullmq-job-id",
   "received": {
     "$event": "user_signup",
     "$params": {
@@ -208,6 +250,9 @@ Collect analytics events.
   }
 }
 ```
+
+`/collect` validates the event, enqueues it to BullMQ, and returns `202
+Accepted`. A separate worker process then stores the event in the database.
 
 ### GraphQL API
 

@@ -14,7 +14,7 @@ body:graphql {
   query {
     events(
       where: {
-        eventName: { eq: "userLoggedIn" },
+        eventName: { eq: "info" },
         createdAt: { gte: 1640995200, lte: 1672531200 }
       },
       limit: 10,

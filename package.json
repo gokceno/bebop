@@ -5,9 +5,17 @@
   "packageManager": "bun@1.2.13",
   "scripts": {
     "build": "turbo run build",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "start:api": "pm2 start apps/server/ecosystem.config.cjs --only bebop-api",
+    "start:worker": "pm2 start apps/server/ecosystem.config.cjs --only bebop-worker",
+    "start:all": "pm2 start apps/server/ecosystem.config.cjs",
+    "stop:all": "pm2 stop all",
+    "restart:all": "pm2 restart all",
+    "delete:all": "pm2 delete all",
+    "logs": "pm2 logs"
   },
   "devDependencies": {
+    "pm2": "^7.0.3",
     "turbo": "^2.5.3"
   },
   "peerDependencies": {

@@ -3,6 +3,11 @@ import type { CamelCaseConfig } from "@gokceno/konfeti/types";
 import * as z from "zod";
 
 const configSchema = z.object({
+  database: z.object({
+    redis: z.object({
+      url: z.string(),
+    }),
+  }),
   auth: z.object({
     bearer_tokens: z.array(z.string()),
     jwt: z.object({

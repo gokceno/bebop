@@ -1,0 +1,21 @@
+meta {
+  name: Debug
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "debug",
+    "$params": {
+      "message": "Processing item 42"
+    },
+    "$trace": []
+  }
+}

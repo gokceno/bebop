@@ -1,0 +1,21 @@
+meta {
+  name: Info
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "info",
+    "$params": {
+      "message": "Application started"
+    },
+    "$trace": []
+  }
+}

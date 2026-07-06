@@ -1,9 +1,13 @@
 import { z } from "zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { CollectPayload, JWTPayload, ParamsInput } from "../types";
-import { Default as DefaultCollectHandler } from "./handlers/default";
+import { createCollectQueue } from "../utils/queue";
 
 export default async function collectRoute(fastify: FastifyInstance) {
+  const collectQueue = createCollectQueue(
+    process.env.REDIS_URL || fastify.config.database.redis.url
+  );
+
   fastify.addHook(
     "preHandler",
     fastify.auth([fastify.verifyJWT, fastify.verifyBearer])
@@ -22,10 +26,9 @@ export default async function collectRoute(fastify: FastifyInstance) {
     };
   });
 
-  // POST /collect - Processes and stores collected data
+  // POST /collect - Accepts and queues collected data
   fastify.post("/collect", async (request: FastifyRequest, reply) => {
-    // Get authentication method from the flag set by auth functions
-    const authMethod: string = request.authMethod || "unknown";
+    const authMethod = request.authMethod as "jwt" | "bearer";
     const jwtPayload: JWTPayload | undefined = request.jwtPayload;
 
     // Dynamically build the schema from config
@@ -56,78 +59,62 @@ export default async function collectRoute(fastify: FastifyInstance) {
       return acc;
     }, {});
 
-    try {
-      const body: CollectPayload | object = request.body || {};
+    const body: CollectPayload | object = request.body || {};
 
-      // First validate the basic structure and event type
-      const basicPayloadSchema = z.object({
-        $event: eventUnion,
-        $params: z.object({}).passthrough(), // Allow any params for now
-        $trace: z.array(z.unknown()),
-      });
+    // Validate the basic structure and event type
+    const basicPayloadSchema = z.object({
+      $event: eventUnion,
+      $params: z.object({}).passthrough(), // Allow any params for now
+      $trace: z.array(z.unknown()),
+    });
 
-      const basicValidation = basicPayloadSchema.safeParse(body);
-      if (!basicValidation.success) {
-        fastify.logger.error(basicValidation.error);
-        throw new Error(`Invalid payload structure.`);
-      }
+    const basicValidation = basicPayloadSchema.parse(body);
 
-      // Now validate params against the specific event type schema
-      const eventType = basicValidation.data.$event;
-      const eventParamsSchema = paramsSchemas[eventType] || z.object({});
+    // Now validate params against the specific event type schema
+    const eventType = basicValidation.$event;
+    const eventParamsSchema = paramsSchemas[eventType] || z.object({});
+    const paramsValidation = eventParamsSchema.parse(basicValidation.$params);
 
-      const paramsValidation = eventParamsSchema.safeParse(
-        basicValidation.data.$params
+    const $event: string = basicValidation.$event;
+    const $params: ParamsInput = paramsValidation;
+    const $trace: object = basicValidation.$trace;
+
+    fastify.logger.debug(`Event: ${$event}`);
+    fastify.logger.debug(`Validated params: ${JSON.stringify($params)}`);
+    fastify.logger.debug(`Validated trace: ${JSON.stringify($trace)}`);
+    if (jwtPayload)
+      fastify.logger.debug(
+        `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
       );
-      if (!paramsValidation.success) {
-        fastify.logger.error(paramsValidation.error);
-        throw new Error(`Invalid parameters for event type '${eventType}'.`);
-      }
 
-      const $event: string = basicValidation.data.$event;
-      const $params: ParamsInput = paramsValidation.data;
-      const $trace: object = basicValidation.data.$trace;
-
-      fastify.logger.debug(`Event: ${$event}`);
-      fastify.logger.debug(`Validated params: ${JSON.stringify($params)}`);
-      fastify.logger.debug(`Validated trace: ${JSON.stringify($trace)}`);
-      if (jwtPayload)
-        fastify.logger.debug(
-          `JWT data to be inserted: ${JSON.stringify(jwtPayload)}`
-        );
-
-      const handlers = [new DefaultCollectHandler()]
-        .filter((h) => h.satisfies.includes(authMethod))
-        .filter((h) => h.target.includes($event) || h.target.includes("*"));
-
-      const eventIds: object[] = [];
-      for (const handler of handlers) {
-        const eventId = await handler.handle(
-          $event,
-          $params,
-          $trace,
-          jwtPayload,
-          fastify.config
-        );
-        if (eventId !== null) eventIds.push(eventId);
-      }
-
-      return reply.status(201).send({
-        eventIds,
-        received: {
-          $event,
-          $params,
+    const job = await collectQueue.add(
+      "process-collect",
+      {
+        $event,
+        $params,
+        $trace,
+        authMethod,
+        jwtPayload,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 1000,
         },
-        auth: {
-          method: authMethod,
-        },
-      });
-    } catch (error) {
-      fastify.logger.error(`Error processing collect request: ${error}`);
-      return reply.status(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+      }
+    );
+
+    return reply.status(202).send({
+      queued: true,
+      jobId: job.id,
+      received: {
+        $event,
+        $params,
+      },
+      auth: {
+        method: authMethod,
+      },
+    });
   });
 }

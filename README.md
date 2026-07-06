@@ -1,6 +1,6 @@
 # Bebop Analytics Platform
 
-A lightweight, high-performance analytics platform designed for modern applications. Bebop provides a complete solution for collecting, storing, and querying user events with minimal overhead and maximum flexibility.
+A lightweight, high-performance analytics platform designed for modern applications. Bebop provides a complete solution for collecting, storing, and querying user events with minimal overhead and maximum flexibility. Event collection is asynchronous via BullMQ and Redis, with a dedicated worker handling database writes.
 
 ## 🎯 Overview
 
@@ -34,21 +34,32 @@ Whether you're building a web app, mobile app, or server-side application, Bebop
 ## 📦 Components
 
 ### [Bebop Server](./apps/server)
-A production-ready analytics backend that receives, validates, and stores events.
+A production-ready analytics backend that receives, validates, and queues events for asynchronous processing.
 
 **Features:**
 - FastAPI-based REST endpoints
 - GraphQL API with dynamic schema generation
 - SQLite database with Drizzle ORM
+- BullMQ + Redis for asynchronous event processing
+- Separate worker process for database writes
 - Configurable event types and parameters
 - Built-in event tracing support
 - Docker deployment ready
+- PM2 deployment ready
 
 **Quick Start:**
 ```bash
 cd apps/server
 bun install
+
+# Terminal 1: start Redis
+redis-server
+
+# Terminal 2: start the API server
 bun run dev
+
+# Terminal 3: start the worker
+bun run dev:worker
 ```
 
 [📖 Server Documentation →](./apps/server/README.md)
@@ -90,18 +101,25 @@ client.sendAsync('user_clicked', {
 
 ### 1. Start the Server
 
+You need Redis running first, then start both the API server and the worker.
+
 ```bash
 # Clone the repository
 git clone https://github.com/gokceno/bebop.git
 cd bebop
 
-# Start the server
+# Start Redis (or run it via Docker)
+redis-server
+
+# Terminal 1: API server
 cd apps/server
 bun install
 bun run dev
-```
 
-The server will be running at `http://localhost:3000`
+# Terminal 2: worker
+cd apps/server
+bun run dev:worker
+```
 
 ### 2. Configure Event Types
 
@@ -121,6 +139,10 @@ auth:
   cors:
     allowed_origins:
       - https://yourdomain.com
+
+database:
+  redis:
+    url: redis://localhost:6379
 
 event_types:
   - type: page_view
@@ -199,33 +221,63 @@ query {
 
 ## 🐳 Docker Deployment
 
-Deploy with Docker Compose for production:
+Deploy the full stack (Redis + API + worker) with Docker Compose:
 
 ```bash
 # In project root
-docker-compose up -d
+docker compose up -d
 ```
 
-The included `docker-compose.yml` sets up the server with persistent data storage.
+The included `docker-compose.yml` sets up Redis, the API server, and the worker with persistent SQLite storage.
+
+## 🚀 PM2 Deployment
+
+Run the API and worker as managed processes with PM2:
+
+```bash
+# In project root
+bun install
+
+# Start both
+bun run start:all
+
+# Start individually
+bun run start:api
+bun run start:worker
+
+# Manage
+bun run logs
+bun run stop:all
+bun run restart:all
+bun run delete:all
+```
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    HTTPS/REST     ┌─────────────────┐
-│   Bebop Client  │ ────────────────► │   Bebop Server  │
-│                 │                   │                 │
-│ • Browser       │                   │ • Fastify       │
-│ • Node.js       │                   │ • GraphQL       │
-│ • Edge Runtime  │                   │ • SQLite        │
-└─────────────────┘                   └─────────────────┘
+┌─────────────────┐    HTTPS/REST     ┌─────────────────┐    enqueue      ┌──────────────┐
+│   Bebop Client  │ ────────────────► │   Bebop API     │ ─────────────► │  BullMQ/Redis │
+│                 │                   │                 │                │               │
+│ • Browser       │                   │ • Fastify       │                │               │
+│ • Node.js       │                   │ • GraphQL       │                │               │
+│ • Edge Runtime  │                   │ • Validation    │                │               │
+└─────────────────┘                   └─────────────────┘                └───────┬───────┘
+                                                                                 │
+                                                                                 │ consume
+                                                                                 ▼
+                                                                        ┌─────────────────┐
+                                                                        │  Bebop Worker   │
+                                                                        │  • SQLite writes  │
+                                                                        └─────────────────┘
 ```
 
 **Data Flow:**
 1. Client captures events in your application
 2. Events are queued and sent to server via REST API
-3. Server validates, processes, and stores events in SQLite
-4. Data is queryable via GraphQL or REST endpoints
-5. Built-in dashboard for real-time analytics (coming soon)
+3. Server validates the event and enqueues it to BullMQ/Redis
+4. Worker consumes the job and stores the event in SQLite
+5. Data is queryable via GraphQL or REST endpoints
+6. Built-in dashboard for real-time analytics (coming soon)
 
 ## 🛠️ Development
 
@@ -238,8 +290,11 @@ bun install
 # Build all packages
 bun run build
 
-# Start development (server)
-cd apps/server && bun run dev
+# Start development (API + worker + Redis)
+cd apps/server
+redis-server
+bun run dev         # API
+bun run dev:worker  # worker
 
 # Run tests
 bun test

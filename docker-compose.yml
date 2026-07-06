@@ -1,12 +1,35 @@
 services:
+  redis:
+    image: redis:alpine
+    container_name: bebop-redis
+    restart: unless-stopped
+
   server:
     build:
       context: ./apps/server
     container_name: bebop-server
-    command: start
+    command: start:api
     restart: unless-stopped
     ports:
-      - 3000
+      - "3000:3000"
     volumes:
       - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
       - ./apps/server/bebop.yml:/app/bebop.yml
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: ./apps/server
+    container_name: bebop-worker
+    command: start:worker
+    restart: unless-stopped
+    volumes:
+      - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
+      - ./apps/server/bebop.yml:/app/bebop.yml
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis

@@ -38,5 +38,13 @@ export type ParamsInput = {
   [key: string]: string | number;
 };
 
+export type CollectJobData = {
+  $event: string;
+  $params: ParamsInput;
+  $trace: object[];
+  authMethod: "jwt" | "bearer";
+  jwtPayload?: JWTPayload;
+};
+
 // Re-export GraphQL types
 export * from "./graphql";

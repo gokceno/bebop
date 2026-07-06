@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import { ZodError } from "zod";
 import { parse, type Config } from "./utils/config";
 import { logger } from "./utils/logger";
 import { setupAuth } from "./utils/auth";
@@ -6,7 +7,7 @@ import collectRoute from "./routes/collect";
 import graphqlRoute from "./routes/graphql";
 import type { FastifyInstance } from "fastify";
 
-const config: Config = parse(process.env.CONFIG_PATH || "bebop.yml");
+const config: Config = parse("bebop.yml");
 
 const fastify: FastifyInstance = Fastify();
 
@@ -50,6 +51,26 @@ fastify.get("/", async () => {
 // Register routes
 fastify.register(collectRoute);
 fastify.register(graphqlRoute);
+
+// Global error handler
+fastify.setErrorHandler((error, request, reply) => {
+  fastify.logger.error(error);
+
+  if (error instanceof ZodError) {
+    return reply.status(400).send({
+      success: false,
+      error: "Validation error",
+      issues: error.issues,
+    });
+  }
+
+  const statusCode = (error as any).statusCode || 500;
+
+  return reply.status(statusCode).send({
+    success: false,
+    error: error.message || "Unknown error",
+  });
+});
 
 // Run the server
 const start = async () => {

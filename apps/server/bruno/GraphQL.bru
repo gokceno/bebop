@@ -14,8 +14,8 @@ body:graphql {
   query {
     events(
       where: {
-        eventName: { in: ["bookingInfoSentToCustomerBySms"] }
-        paramsFlat: { customerId: { eq: "customer_12345" } }
+        eventName: { in: ["info"] }
+        params: { info: { message: { eq: "Application started" } } }
         claims: { email: { eq: "gokcen@brewww.com" } }
       }
       limit: 2
@@ -40,5 +40,5 @@ body:graphql {
       total
     }
   }
-  
+
 }

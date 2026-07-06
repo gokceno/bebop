@@ -1,0 +1,21 @@
+meta {
+  name: Error
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/collect
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "$event": "error",
+    "$params": {
+      "message": "Something went wrong"
+    },
+    "$trace": []
+  }
+}

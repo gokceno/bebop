@@ -14,10 +14,10 @@ body:graphql {
   query {
     events(
       where: {
-        eventName: { eq: "monthlyPriceEntered" },
+        eventName: { eq: "info" },
         params: {
-          monthlyPriceEntered: {
-            propertyId: { eq: "property_12345" }
+          info: {
+            message: { eq: "Application started" }
           }
         }
       },
