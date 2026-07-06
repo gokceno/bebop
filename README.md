@@ -56,7 +56,7 @@ bun install
 redis-server
 
 # Terminal 2: start the API server
-bun run dev
+bun run dev:api
 
 # Terminal 3: start the worker
 bun run dev:worker

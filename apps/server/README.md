@@ -35,7 +35,7 @@ cd bebop/apps/server
 bun install
 
 # Start the API server
-bun run dev
+bun run dev:api
 
 # In a separate terminal, start the collect worker
 bun run dev:worker
@@ -471,11 +471,17 @@ Bebop Server uses SQLite with the following schema:
 ### Scripts
 
 ```bash
-# Development with hot reload
-bun run dev
+# API server with hot reload
+bun run dev:api
 
-# Production start
-bun run start
+# Worker with hot reload
+bun run dev:worker
+
+# Production API
+bun run start:api
+
+# Production worker
+bun run start:worker
 
 # Database migrations (if using Drizzle Kit)
 npx drizzle-kit generate
@@ -488,6 +494,8 @@ npx drizzle-kit migrate
 src/
 ├── graphql/
 │   └── schema.ts          # GraphQL schema and resolvers
+├── handlers/
+│   └── default.ts        # Default collect event handler
 ├── routes/
 │   ├── collect.ts         # Event collection endpoint
 │   └── graphql.ts         # GraphQL endpoint
@@ -497,8 +505,10 @@ src/
 │   ├── auth.ts           # Authentication setup
 │   ├── config.ts         # YAML configuration loader
 │   ├── db.ts             # Database connection
-│   └── logger.ts         # Winston logger
-├── index.ts              # Main server file
+│   ├── logger.ts         # Winston logger
+│   └── queue.ts          # BullMQ queue setup
+├── index.ts              # Main API server file
+├── worker.ts             # BullMQ worker entrypoint
 └── schema.ts             # Drizzle database schema
 ```
 
@@ -506,60 +516,60 @@ src/
 
 ### Using Docker Compose
 
-```yaml
-services:
-  server:
-    build:
-      context: ./apps/server
-    container_name: bebop-server
-    command: start
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./apps/server/db/bebop.sqlite:/app/db/bebop.sqlite
-      - ./apps/server/bebop.yml:/app/bebop.yml
-```
+The root `docker-compose.yml` starts Redis, the API server, and the worker:
 
 ```bash
-# Build and run
-docker-compose up -d
+# From the repository root
+docker compose up -d
 
 # View logs
-docker-compose logs -f server
+docker compose logs -f
+```
+
+To stop:
+
+```bash
+docker compose down
 ```
 
 ### Manual Docker Build
+
+From `apps/server`:
 
 ```bash
 # Build image
 docker build -t bebop-server .
 
-# Run container
+# Run API container
 docker run -d \
   -p 3000:3000 \
   -v $(pwd)/bebop.yml:/app/bebop.yml \
   -v $(pwd)/db:/app/db \
+  -e DATABASE__REDIS__URL=redis://your-redis-host:6379 \
   --name bebop-server \
-  bebop-server
+  bebop-server start:api
+
+# Run worker container
+docker run -d \
+  -v $(pwd)/bebop.yml:/app/bebop.yml \
+  -v $(pwd)/db:/app/db \
+  -e DATABASE__REDIS__URL=redis://your-redis-host:6379 \
+  --name bebop-worker \
+  bebop-server start:worker
 ```
 
 ## Production Deployment
 
 ### Environment Variables
 
-While the server primarily uses `bebop.yml` for configuration, you can set these environment variables:
+The server is configured through `bebop.yml`. Environment variables can override any value using `__` as the nested-key separator and `_0`, `_1`, etc. for array indices. See `env.example` for the full pattern.
 
 ```bash
-# Database path (default: ./db/bebop.sqlite)
-DATABASE_URL=./db/bebop.sqlite
-
-# Server port (default: 3000)
-PORT=3000
-
-# Server host (default: 0.0.0.0)
-HOST=0.0.0.0
+# Override Redis URL
+DATABASE__REDIS__URL=redis://redis:6379
 ```
+
+Environment variables follow the same `__` nested-key pattern shown in `env.example`. There is no special `REDIS_URL` shortcut.
 
 ### Security Considerations
 
